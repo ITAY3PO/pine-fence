@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}</style>
+<title>גדר האורן</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one-screen tool — 3D scene fills the main area, a working panel of parameters + cut list on the side (stacks on phones) */
+:root{
+  --bg:#EEF1EE; --panel:#F8FAF8; --fg:#1B2420; --muted:#5E6B64; --line:#D4DBD6;
+  --accent:#2F6B4F; --accent-ink:#FFFFFF; --wood:#B9813F; --wood-soft:#F1E3CF; --warn:#A5541B;
+  --scene:#DCE3DE;
+  --f-display:"Frank Ruhl Libre", "David", serif;
+  --f-body:"IBM Plex Sans Hebrew", "Arial Hebrew", "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141A17; --panel:#1B231F; --fg:#E4EAE6; --muted:#97A59D; --line:#2E3934;
+  --accent:#6FBF94; --accent-ink:#0F1612; --wood:#D9A066; --wood-soft:#3A2D1E; --warn:#E59A5F;
+  --scene:#202925; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141A17; --panel:#1B231F; --fg:#E4EAE6; --muted:#97A59D; --line:#2E3934;
+  --accent:#6FBF94; --accent-ink:#0F1612; --wood:#D9A066; --wood-soft:#3A2D1E; --warn:#E59A5F;
+  --scene:#202925; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.5}
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 380px;grid-template-rows:auto minmax(0,1fr);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px;gap:12px;box-sizing:border-box}
+header{grid-column:1/-1;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:700;font-size:26px;margin:0;letter-spacing:.2px}
+header p{margin:0;color:var(--muted)}
+.stage{position:relative;min-height:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--scene)}
+#scene{position:absolute;inset:0}
+.overlay{position:absolute;top:10px;inset-inline-start:10px;inset-inline-end:10px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.overlay>*{pointer-events:auto}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:5px 10px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sep{width:1px;background:var(--line);margin-inline:2px}
+.lbl3d{font-family:var(--f-body);font-size:12px;background:var(--panel);color:var(--fg);border:1px solid var(--line);padding:2px 7px;border-radius:4px;white-space:nowrap}
+.lbl3d b{font-family:var(--f-mono);font-weight:500}
+aside{min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:18px}
+h2{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--muted);margin:0 0 8px;text-transform:uppercase}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+input,select{font:inherit;font-family:var(--f-mono);font-size:14px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;width:100%;box-sizing:border-box}
+.btn{font:inherit;font-weight:600;background:var(--accent);color:var(--accent-ink);border:0;border-radius:4px;padding:8px 12px;cursor:pointer;width:100%}
+.btn:hover{filter:brightness(1.08)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:var(--bg);border-radius:4px;padding:8px 10px}
+.kpi .v{font-family:var(--f-mono);font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}
+.kpi .k{font-size:11.5px;color:var(--muted)}
+.kpi.good .v{color:var(--accent)} .kpi.bad .v{color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-weight:500;color:var(--muted);text-align:start;font-size:12px;padding:4px 4px;border-bottom:1px solid var(--line)}
+td{padding:5px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+td.n,th.n{font-family:var(--f-mono);text-align:end}
+.pat{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.pat .x{font-family:var(--f-mono);font-weight:500;min-width:36px}
+.bar{flex:1;display:flex;height:22px;direction:ltr;border-radius:3px;overflow:hidden;background:var(--line);min-width:0}
+.bar span{display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:11px;color:#3A2410;border-inline-end:2px solid var(--panel);overflow:hidden;white-space:nowrap}
+.bar span.t{background:#D8A86A} .bar span.w{background:#E9C694} .bar span.e{background:#C79257}
+.bar span.k{background:transparent;color:var(--muted)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px;vertical-align:-1px}
+ul.notes{margin:0;padding-inline-start:18px;display:flex;flex-direction:column;gap:5px;color:var(--fg)}
+ul.notes li::marker{color:var(--wood)}
+.muted{color:var(--muted)} .mono{font-family:var(--f-mono)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,select,input{touch-action:manipulation}
+.app{height:100vh;height:100dvh}
+/* Phones (portrait): app-style layout — 3D stays pinned on top, panel scrolls below it, so you see the fence update while editing */
+@media (max-width:820px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(220px,44dvh) minmax(0,1fr);
+    gap:8px;padding-top:max(8px,env(safe-area-inset-top,0px));padding-bottom:0;
+    padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+  header{flex-wrap:nowrap;gap:10px;min-width:0}
+  h1{font-size:20px;flex:none}
+  header p{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  aside{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:0;
+    padding:12px 12px max(16px,env(safe-area-inset-bottom,0px));gap:16px}
+  /* chips: toggles on row 1, camera views on row 2; bigger tap targets */
+  .overlay{top:8px;inset-inline-start:8px;inset-inline-end:8px;gap:6px}
+  .sep{flex-basis:100%;height:0;width:auto;margin:0;background:none}
+  .chip{min-height:34px;padding:4px 12px;font-size:13px}
+  .lbl3d{font-size:10.5px;padding:1px 5px}
+  /* 16px inputs stop iOS from zooming the page on focus */
+  input,select{font-size:16px;min-height:40px;padding:6px 8px}
+  .btn{min-height:44px}
+  .kpi{padding:8px}
+  .kpi .v{font-size:18px}
+  table{font-size:12.5px}
+}
+@media (max-width:360px){
+  .grid2{grid-template-columns:minmax(0,1fr)}
+  .chip{padding:4px 9px;font-size:12px}
+}
+/* Phones in landscape: side-by-side, compact header */
+@media (max-height:500px) and (orientation:landscape){
+  .app{grid-template-columns:minmax(0,1fr) min(340px,45vw);grid-template-rows:auto minmax(0,1fr);gap:8px;padding-block:6px}
+  h1{font-size:18px}
+  header p{display:none}
+  aside{padding:10px 12px;gap:14px;border-radius:6px;border:1px solid var(--line)}
+  .chip{min-height:30px;padding:3px 10px}
+  .sep{flex-basis:auto;width:1px;background:var(--line);margin-inline:2px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app" dir="rtl">
+  <header>
+    <h1>גדר האורן</h1>
+    <p>הדמיה בקירוב · צורת ח׳ · לוחות אנכיים צמודים · קונסטרוקציה בצד הפנימי של גדר הברזל</p>
+  </header>
+
+  <div class="stage">
+    <div id="scene" aria-label="הדמיה תלת-ממדית של הגדר"></div>
+    <div class="overlay">
+      <button class="chip" id="tBoards" aria-pressed="true">לוחות</button>
+      <button class="chip" id="tFrame" aria-pressed="true">קונסטרוקציה</button>
+      <button class="chip" id="tIron" aria-pressed="true">גדר ברזל</button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="chip" data-view="in">מבפנים</button>
+      <button class="chip" data-view="out">מבחוץ</button>
+      <button class="chip" data-view="top">מלמעלה</button>
+    </div>
+  </div>
+
+  <aside>
+    <section>
+      <h2>פרמטרים</h2>
+      <div class="grid2">
+        <label class="f">גובה גדר (ס״מ)<input id="H" type="number" inputmode="decimal" min="150" max="240" step="1" value="187"></label>
+        <label class="f">אורך לוח אצל הספק<select id="stock">
+          <option>300</option><option>360</option><option>366</option><option>400</option><option>420</option>
+          <option>450</option><option selected>480</option><option>500</option><option>540</option><option>600</option>
+        </select></label>
+        <label class="f">רוחב לוח נטו (ס״מ)<input id="W" type="number" inputmode="decimal" min="5" max="30" step="0.1" value="12"></label>
+        <label class="f">עובי לוח (ס״מ)<input id="T" type="number" inputmode="decimal" min="1" max="5" step="0.1" value="2"></label>
+        <label class="f">עובי מסור (ס״מ)<input id="K" type="number" inputmode="decimal" min="0" max="1" step="0.05" value="0.3"></label>
+        <label class="f">מרווח עמודים מקס׳ (ס״מ)<input id="P" type="number" inputmode="decimal" min="60" max="250" step="5" value="150"></label>
+      </div>
+      <div style="margin-top:10px"><button class="btn" id="best">מצא גובה אופטימלי (≥183)</button></div>
+    </section>
+
+    <section>
+      <h2>סיכום קנייה</h2>
+      <div class="summary">
+        <div class="kpi"><div class="v" id="kBuy">–</div><div class="k">לוחות לקנייה</div></div>
+        <div class="kpi" id="kWasteBox"><div class="v" id="kWaste">–</div><div class="k">פחת באורך</div></div>
+        <div class="kpi"><div class="v" id="kPieces">–</div><div class="k">חתיכות</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>לפי קטע</h2>
+      <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>קטע</th><th class="n">רוחב</th><th class="n">בסיס</th><th class="n">אורך לוח</th><th class="n">לוחות</th><th class="n">לוח אחרון</th></tr></thead>
+        <tbody id="segRows"></tbody>
+      </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>תוכנית חיתוך</h2>
+      <div id="patterns"></div>
+      <div class="legend"><span><i style="background:#D8A86A"></i>דרום / מזרח א׳ / מערב א׳</span><span><i style="background:#E9C694"></i>מזרח ב׳</span><span><i style="background:#C79257"></i>מערב ב׳</span></div>
+    </section>
+
+    <section>
+      <h2>קונסטרוקציה (הערכה)</h2>
+      <table><tbody id="frameRows"></tbody></table>
+      <p class="muted" style="margin:8px 0 6px;font-size:12.5px">אפשר לגרור בהדמיה: עמוד אורן — לאורך הגדר, קורה אופקית — למעלה/למטה. כדי להגיע לקורות, כבו את ״לוחות״.</p>
+      <button class="chip" id="resetFrame">איפוס מיקומי קונסטרוקציה</button>
+    </section>
+
+    <section>
+      <h2>הערות</h2>
+      <ul class="notes">
+        <li>סדר השכבות מבחוץ פנימה: גדר ברזל ← עמודי אורן 5×5 מוברגים לעמודי הברזל ← קורות אופקיות 5×5 ← לוחות.</li>
+        <li>במערב א׳ ובמערב ב׳ גדר הברזל מגיעה כמעט לגובה הגדר, ושם עמודי האורן נתמכים לכל הגובה.</li>
+        <li>בדרום ובמזרח א׳ עמודי האורן עולים כ-77 ס״מ מעל הברזל (110). כדאי לחבר כל עמוד בשני ברגים עוברים M8 לפחות, אחד ליד הבסיס ואחד ליד ראש עמוד הברזל.</li>
+        <li>במזרח ב׳ גדר הברזל בולטת רק 40 ס״מ מעל הקיר, ועמודי האורן עולים מעליה כ-65 ס״מ. שם כדאי לעגן את העמודים גם לקיר עצמו, עם זוויתן ודיבל פלדה.</li>
+        <li>מידות גדר הברזל ומיקום העמודים בהדמיה משוערים.</li>
+      </ul>
+    </section>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
+<script>
+// ---------- fence data (cm). x = east, z = south (north is negative z). n = inward normal
+const SEGS = [
+  {id:'S',  name:'דרום',    len:720, base:0,  ironTop:110, o:[0,0],      d:[1,0],  n:[0,-1], grp:'t'},
+  {id:'WA', name:'מערב א׳', len:119, base:0,  ironTop:183, o:[0,0],      d:[0,-1], n:[1,0],  grp:'t'},
+  {id:'WB', name:'מערב ב׳', len:238, base:84, ironTop:184, o:[0,-119],   d:[0,-1], n:[1,0],  grp:'e'},
+  {id:'EA', name:'מזרח א׳', len:113, base:0,  ironTop:110, o:[720,0],    d:[0,-1], n:[-1,0], grp:'t'},
+  {id:'EB', name:'מזרח ב׳', len:284, base:82, ironTop:122, o:[720,-113], d:[0,-1], n:[-1,0], grp:'w'},
+];
+const POST=5, RAIL_D=5, RAIL_H=5, IRON=1.6;
+const $=id=>document.getElementById(id);
+
+function params(){
+  return {H:+$('H').value||187, stock:+$('stock').value, W:+$('W').value||12, T:+$('T').value||2, K:+$('K').value||0, P:+$('P').value||150};
+}
+
+// ---------- board math
+function boardsFor(len,W){
+  const n=Math.max(1,Math.ceil(len/W-0.02));
+  const last=+(len-(n-1)*W).toFixed(1);
+  return {nb:n,last};
+}
+function pack(pieces,stock,K){
+  const ps=[...pieces].sort((a,b)=>b.len-a.len), bins=[];
+  for(const p of ps){
+    let best=null,bestRem=Infinity;
+    for(const b of bins){
+      const rem=b.rem-K-p.len;
+      if(rem>=0 && rem<bestRem){best=b;bestRem=rem}
+    }
+    if(best){best.rem=bestRem;best.items.push(p)}
+    else{ if(p.len>stock) return null; bins.push({rem:stock-p.len,items:[p]}) }
+  }
+  return bins;
+}
+function compute(pr){
+  const segs=SEGS.map(s=>{const b=boardsFor(s.len,pr.W);return {...s,...b,blen:pr.H-s.base}});
+  const pieces=[]; segs.forEach(s=>{for(let i=0;i<s.nb;i++)pieces.push({len:s.blen,grp:s.grp})});
+  const bins=pack(pieces,pr.stock,pr.K);
+  if(!bins) return {segs,bins:null};
+  const used=pieces.reduce((a,p)=>a+p.len,0);
+  const waste=bins.length*pr.stock-used;
+  return {segs,bins,pieces:pieces.length,wastePct:100*waste/(bins.length*pr.stock)};
+}
+
+// ---------- UI rendering
+function renderPanel(pr,res){
+  const {segs,bins}=res;
+  $('segRows').innerHTML=segs.map(s=>`<tr><td>${s.name}</td><td class="n">${s.len}</td><td class="n">${s.base||'0'}</td><td class="n">${s.blen}</td><td class="n">${s.nb}</td><td class="n">${s.last<pr.W?s.last+' ✂':s.last}</td></tr>`).join('')+
+    `<tr><td><b>סה״כ</b></td><td class="n">${segs.reduce((a,s)=>a+s.len,0)}</td><td></td><td></td><td class="n"><b>${segs.reduce((a,s)=>a+s.nb,0)}</b></td><td></td></tr>`;
+  if(!bins){
+    $('kBuy').textContent='—';$('kWaste').textContent='—';$('kPieces').textContent='—';
+    $('patterns').innerHTML=`<p class="muted">הלוח שאצל הספק קצר מגובה הגדר.</p>`;return;
+  }
+  $('kBuy').textContent=bins.length;
+  $('kWaste').textContent=res.wastePct.toFixed(1)+'%';
+  $('kWasteBox').className='kpi '+(res.wastePct<3?'good':res.wastePct>10?'bad':'');
+  $('kPieces').textContent=res.pieces;
+  const groups=new Map();
+  bins.forEach(b=>{const key=b.items.map(i=>i.grp+i.len).join('|');const g=groups.get(key);g?g.count++:groups.set(key,{count:1,b})});
+  $('patterns').innerHTML=[...groups.values()].sort((a,b)=>b.count-a.count).map(({count,b})=>{
+    const spans=b.items.map(i=>`<span class="${i.grp}" style="flex:${i.len}">${i.len}</span>`).join('');
+    const rem=b.rem>0.5?`<span class="k" style="flex:${b.rem}">${b.rem.toFixed(1)}</span>`:'';
+    return `<div class="pat"><span class="x">×${count}</span><div class="bar" title="לוח ${pr.stock} ס״מ">${spans}${rem}</div></div>`;
+  }).join('');
+  // frame
+  let posts=0,postLen=0,rail=0;
+  segs.forEach(s=>{const ps=postsOf(s,pr);posts+=ps.length;postLen+=ps.length*(pr.H-3-s.base);rail+=railsOf(s,pr).length*s.len});
+  $('frameRows').innerHTML=`<tr><td>עמודי אורן 5×5</td><td class="n">${posts} יח׳</td><td class="n">${(postLen/100).toFixed(1)} מ׳</td></tr>
+   <tr><td>קורות אופקיות 5×5</td><td class="n"></td><td class="n">${(rail/100).toFixed(1)} מ׳</td></tr>
+   <tr><td>ברגים עוברים M8 (2 לעמוד)</td><td class="n">${posts*2} יח׳</td><td></td></tr>
+   <tr><td>ברגי נירוסטה ללוחות (2 לכל קורה)</td><td class="n">${segs.reduce((a,s)=>a+s.nb*2*railHeights(s.blen,s.base,pr.H).length,0)} יח׳</td><td></td></tr>`;
+}
+function postPositions(len,P){
+  const k=Math.max(1,Math.ceil(len/P));const out=[];
+  for(let i=0;i<=k;i++){out.push(Math.min(len-POST/2,Math.max(POST/2,len*i/k)))}
+  return out;
+}
+function railHeights(blen,base,H){
+  const lo=base+12, hi=H-12-RAIL_H;
+  if(blen>150) return [lo,(lo+hi)/2,hi];
+  return [lo,hi];
+}
+
+// ---------- draggable frame: user-moved positions override the computed ones (per segment)
+const ov={post:{},rail:{}};
+function postsOf(s,pr){const d=postPositions(s.len,pr.P),o=ov.post[s.id];return o&&o.length===d.length?o:d}
+function railsOf(s,pr){const d=railHeights(s.blen,s.base,pr.H),o=ov.rail[s.id];
+  return o&&o.length===d.length?o.map(y=>Math.min(pr.H-RAIL_H,Math.max(s.base,y))):d}
+
+// ---------- three.js scene
+const host=$('scene');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(2,devicePixelRatio));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+host.appendChild(renderer.domElement);
+const labelLayer=document.createElement('div');labelLayer.style.cssText='position:absolute;inset:0;pointer-events:none;overflow:hidden';
+host.appendChild(labelLayer);const labels=[];
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(42,1,5,8000);
+// minimal orbit controls: drag = rotate, right-drag / shift-drag / two fingers = pan, wheel / pinch = zoom
+const controls=(()=>{
+  const target=new THREE.Vector3(), sph=new THREE.Spherical(), el=renderer.domElement;
+  el.style.touchAction='none';
+  const ptrs=new Map(); let mode=null, last=null, pinch=0, drag=null;
+  const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(), hitP=new THREE.Vector3();
+  function cast(e){const r=el.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera)}
+  // first thing under the pointer among visible boards + frame; only frame pieces are grabbable (boards occlude rails)
+  function pick(e){if(!G.frame.visible)return null;cast(e);
+    const objs=[...G.frame.children,...(G.boards.visible?G.boards.children:[])];
+    const h=ray.intersectObjects(objs,false)[0];return h&&h.object.userData.kind?h:null}
+  function startDrag(h){const o=h.object,u=o.userData,s=SEGS.find(x=>x.id===u.seg),pr=params();
+    const seg={...s,blen:pr.H-s.base};
+    if(!ov[u.kind][s.id])ov[u.kind][s.id]=[...(u.kind==='post'?postsOf(seg,pr):railsOf(seg,pr))];
+    const plane=new THREE.Plane();
+    if(u.kind==='post')plane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0,1,0),h.point);
+    else plane.setFromNormalAndCoplanarPoint(new THREE.Vector3(s.n[0],0,s.n[1]),h.point);
+    const cur=ov[u.kind][s.id][u.i];
+    const off=u.kind==='post'?along(s,h.point)-cur:h.point.y-cur;
+    drag={o,u,s,pr,plane,off};o.material=mats.frameHi}
+  function along(s,p){return (p.x-s.o[0])*s.d[0]+(p.z-s.o[1])*s.d[1]}
+  function moveDrag(e){cast(e);if(!ray.ray.intersectPlane(drag.plane,hitP))return;
+    const {o,u,s,pr,off}=drag, arr=ov[u.kind][s.id];
+    if(u.kind==='post'){const v=Math.min(s.len-POST/2,Math.max(POST/2,along(s,hitP)-off));arr[u.i]=v;
+      if(s.d[0])o.position.x=s.o[0]+s.d[0]*v;else o.position.z=s.o[1]+s.d[1]*v}
+    else{const v=Math.min(pr.H-RAIL_H,Math.max(s.base,hitP.y-off));arr[u.i]=v;o.position.y=v+RAIL_H/2}}
+  function endDrag(){if(!drag)return;drag.o.material=mats.frame;drag=null;update()}
+  function sync(){sph.setFromVector3(camera.position.clone().sub(target))}
+  function apply(){sph.phi=Math.min(Math.PI*0.495,Math.max(0.05,sph.phi));sph.radius=Math.min(4000,Math.max(80,sph.radius));
+    camera.position.copy(target).add(new THREE.Vector3().setFromSpherical(sph));camera.lookAt(target)}
+  function pan(dx,dy){const k=sph.radius*0.0016;const r=new THREE.Vector3().setFromMatrixColumn(camera.matrix,0);
+    const f=new THREE.Vector3().subVectors(target,camera.position);f.y=0;f.normalize();
+    const mv=r.multiplyScalar(-dx*k).add(f.multiplyScalar(dy*k));target.add(mv);camera.position.add(mv)}
+  el.addEventListener('contextmenu',e=>e.preventDefault());
+  el.addEventListener('pointerdown',e=>{el.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(ptrs.size===1&&e.button===0&&!e.shiftKey){const h=pick(e);if(h){startDrag(h);mode='drag';el.style.cursor='grabbing';return}}
+    if(drag)endDrag();
+    sync();mode=ptrs.size>=2?'two':(e.button===2||e.shiftKey?'pan':'rot');last={x:e.clientX,y:e.clientY};
+    if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);last={x:(a.x+b.x)/2,y:(a.y+b.y)/2}}});
+  el.addEventListener('pointermove',e=>{
+    if(!ptrs.size&&e.pointerType==='mouse'){el.style.cursor=pick(e)?'grab':'';return}
+    if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(mode==='drag'){if(drag)moveDrag(e);return}
+    if(mode==='two'&&ptrs.size>=2){const [a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),c={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+      sync();sph.radius*=pinch/d;pinch=d;apply();pan(c.x-last.x,c.y-last.y);last=c;return}
+    const dx=e.clientX-last.x,dy=e.clientY-last.y;last={x:e.clientX,y:e.clientY};sync();
+    if(mode==='rot'){sph.theta-=dx*0.006;sph.phi-=dy*0.006;apply()}else if(mode==='pan'){pan(dx,dy)}});
+  const up=e=>{ptrs.delete(e.pointerId);if(mode==='drag'){endDrag();el.style.cursor='';if(ptrs.size===0){mode=null;return}}
+    if(ptrs.size===0)mode=null;else{mode='rot';const p=[...ptrs.values()][0];last={...p}}};
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  el.addEventListener('wheel',e=>{e.preventDefault();sync();sph.radius*=Math.exp(e.deltaY*0.001);apply()},{passive:false});
+  return {target,update(){camera.lookAt(target)}};
+})();
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x8a8a7a,0.65));
+const sun=new THREE.DirectionalLight(0xfff3e0,0.75);
+sun.position.set(-300,700,500); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-600,right:600,top:600,bottom:-600,near:10,far:2000});
+sun.target.position.set(360,0,-200); scene.add(sun,sun.target);
+
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(3000,3000),new THREE.MeshStandardMaterial({color:0xc9c6bd,roughness:1}));
+ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+const tiles=new THREE.GridHelper(3000,100,0xb5b2a8,0xb5b2a8); tiles.position.y=0.05; scene.add(tiles);
+
+const mats={
+  iron:new THREE.MeshStandardMaterial({color:0x2b2f31,metalness:0.6,roughness:0.5}),
+  wall:new THREE.MeshStandardMaterial({color:0xd8d3c8,roughness:0.95}),
+  frame:new THREE.MeshStandardMaterial({color:0xc39a62,roughness:0.85}),
+  frameHi:new THREE.MeshStandardMaterial({color:0xe0b070,roughness:0.6,emissive:0x5a3a10}),
+};
+const boardMats=[...Array(8)].map((_,i)=>new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(0.085+0.008*Math.sin(i*2.1),0.55,0.62+0.04*Math.cos(i*1.7)),roughness:0.8}));
+
+const G={iron:new THREE.Group(),wall:new THREE.Group(),frame:new THREE.Group(),boards:new THREE.Group(),labels:new THREE.Group()};
+Object.values(G).forEach(g=>scene.add(g));
+
+function boxOn(seg,s0,s1,t0,t1,y0,y1,mat,group){
+  const p=(s,t)=>[seg.o[0]+seg.d[0]*s+seg.n[0]*t, seg.o[1]+seg.d[1]*s+seg.n[1]*t];
+  const a=p(s0,t0),b=p(s1,t1);
+  const sx=Math.abs(b[0]-a[0]),sz=Math.abs(b[1]-a[1]),sy=y1-y0;
+  if(sx<=0||sz<=0||sy<=0)return null;
+  const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat);
+  m.position.set((a[0]+b[0])/2,(y0+y1)/2,(a[1]+b[1])/2);
+  m.castShadow=true;m.receiveShadow=true;group.add(m);return m;
+}
+function clear(g){while(g.children.length){const c=g.children.pop();c.geometry?.dispose()}}
+
+function buildScene(pr,res){
+  Object.values(G).forEach(clear);labels.forEach(l=>l.el.remove());labels.length=0;
+  const T=pr.T, tF=IRON/2, tR=tF+POST, tB=tR+RAIL_D;
+  res.segs.forEach(s=>{
+    // wall
+    if(s.base>0) boxOn(s,0,s.len,-12,tB+T+8,0,s.base,mats.wall,G.wall);
+    // iron: bars, rails, posts
+    for(let x=4;x<s.len;x+=12) boxOn(s,x-IRON/2,x+IRON/2,-IRON/2,IRON/2,s.base,s.ironTop,mats.iron,G.iron);
+    boxOn(s,0,s.len,-1.5,1.5,s.base+6,s.base+9,mats.iron,G.iron);
+    boxOn(s,0,s.len,-1.5,1.5,s.ironTop-3,s.ironTop,mats.iron,G.iron);
+    postPositions(s.len,pr.P).forEach(x=>boxOn(s,x-2.5,x+2.5,-5,0,s.base,s.ironTop+2,mats.iron,G.iron));
+    // pine posts + rails
+    postsOf(s,pr).forEach((x,i)=>{const m=boxOn(s,x-POST/2,x+POST/2,tF,tR,s.base,pr.H-3,mats.frame,G.frame);if(m)m.userData={kind:'post',seg:s.id,i}});
+    railsOf(s,pr).forEach((y,i)=>{const m=boxOn(s,0,s.len,tR,tB,y,y+RAIL_H,mats.frame,G.frame);if(m)m.userData={kind:'rail',seg:s.id,i}});
+    // boards
+    for(let i=0;i<s.nb;i++){
+      const w=i<s.nb-1?pr.W:s.last, s0=i*pr.W;
+      boxOn(s,s0+0.08,s0+w-0.08,tB,tB+T,s.base,pr.H,boardMats[(i*5+s.id.length)%8],G.boards);
+    }
+    // label
+    const el=document.createElement('div');el.className='lbl3d';el.innerHTML=`${s.name} · <b>${s.len}</b>`;
+    el.style.position='absolute';el.style.transform='translate(-50%,-50%)';labelLayer.appendChild(el);
+    const mid=[s.o[0]+s.d[0]*s.len/2+s.n[0]*-30, s.o[1]+s.d[1]*s.len/2+s.n[1]*-30];
+    labels.push({el,pos:new THREE.Vector3(mid[0],pr.H+18,mid[1])});
+  });
+  applyVis();
+}
+
+// visibility toggles
+const vis={boards:true,frame:true,iron:true};
+function applyVis(){G.boards.visible=vis.boards;G.frame.visible=vis.frame;G.iron.visible=vis.iron}
+[['tBoards','boards'],['tFrame','frame'],['tIron','iron']].forEach(([id,k])=>{
+  $(id).addEventListener('click',e=>{vis[k]=!vis[k];e.currentTarget.setAttribute('aria-pressed',vis[k]);applyVis()});
+});
+const VIEWS={in:[[520,470,-980],[360,40,-150]],out:[[-250,380,820],[360,60,-150]],top:[[360,1100,-170],[360,0,-170]]};
+function setView(v){const [p,t]=VIEWS[v];
+  // narrow / portrait stage (phones): pull the camera back so the whole 7.2m fence fits the frame
+  const a=(host.clientWidth||1)/(host.clientHeight||1), k=Math.max(1,Math.min(2.2,1.6/a));
+  camera.position.set(...p.map((c,i)=>t[i]+(c-t[i])*k));controls.target.set(...t);controls.update()}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+
+// theme-aware scene background
+function syncBg(){const c=getComputedStyle(document.documentElement).getPropertyValue('--scene').trim()||'#DCE3DE';scene.background=new THREE.Color(c);scene.fog=new THREE.Fog(c,1800,4200)}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',syncBg);
+new MutationObserver(syncBg).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+syncBg();
+
+function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(host);
+
+function update(){const pr=params();const res=compute(pr);renderPanel(pr,res);buildScene(pr,res)}
+['H','stock','W','T','K','P'].forEach(id=>$(id).addEventListener('input',update));
+$('P').addEventListener('input',()=>{ov.post={};update()});
+$('resetFrame').addEventListener('click',()=>{ov.post={};ov.rail={};update()});
+$('best').addEventListener('click',()=>{
+  const pr=params();let best=null;
+  for(let H=183;H<=230;H++){const r=compute({...pr,H});if(!r.bins)continue;
+    if(!best||r.bins.length<best.n||(r.bins.length===best.n&&H>best.H))best={H,n:r.bins.length};}
+  if(best){$('H').value=best.H;update()}
+});
+
+setView('in');update();resize();
+const v3=new THREE.Vector3();
+renderer.setAnimationLoop(()=>{renderer.render(scene,camera);const w=host.clientWidth,h=host.clientHeight;
+  labels.forEach(l=>{v3.copy(l.pos).project(camera);const vis=v3.z<1&&Math.abs(v3.x)<1.1&&Math.abs(v3.y)<1.1;l.el.hidden=!vis;
+    if(vis){l.el.style.left=((v3.x+1)/2*w)+'px';l.el.style.top=((1-v3.y)/2*h)+'px'}})});
+</script>
+</body>
+</html>
