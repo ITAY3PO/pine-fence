@@ -70,6 +70,17 @@ td.n,th.n{font-family:var(--f-mono);text-align:end}
 ul.notes{margin:0;padding-inline-start:18px;display:flex;flex-direction:column;gap:5px;color:var(--fg)}
 ul.notes li::marker{color:var(--wood)}
 .muted{color:var(--muted)} .mono{font-family:var(--f-mono)}
+.seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:10px}
+.seg button{flex:1;font:inherit;font-size:13px;background:var(--bg);color:var(--fg);border:0;padding:7px 6px;cursor:pointer}
+.seg button+button{border-inline-start:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.prices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.prices label{display:flex;flex-direction:column;gap:2px;font-family:var(--f-mono);font-size:11.5px;color:var(--muted);text-align:center}
+.prices input{padding:5px 4px;text-align:center}
+.prices label.on{color:var(--accent);font-weight:600}
+.optres{margin:8px 0 0;font-size:12.5px;color:var(--muted)}
+.optres b{color:var(--fg);font-family:var(--f-mono);font-weight:500}
+.summary.cost{margin-top:8px}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 button,select,input{touch-action:manipulation}
 .app{height:100vh;height:100dvh}
@@ -93,6 +104,8 @@ button,select,input{touch-action:manipulation}
   .btn{min-height:44px}
   .kpi{padding:8px}
   .kpi .v{font-size:18px}
+  .prices{gap:5px}
+  .prices input{min-height:36px;font-size:16px;padding:4px 2px}
   table{font-size:12.5px}
 }
 @media (max-width:360px){
@@ -146,7 +159,26 @@ button,select,input{touch-action:manipulation}
         <label class="f">עובי מסור (ס״מ)<input id="K" type="number" inputmode="decimal" min="0" max="1" step="0.05" value="0.3"></label>
         <label class="f">מרווח עמודים מקס׳ (ס״מ)<input id="P" type="number" inputmode="decimal" min="60" max="250" step="5" value="150"></label>
       </div>
-      <div style="margin-top:10px"><button class="btn" id="best">מצא גובה אופטימלי (≥183)</button></div>
+      <div style="margin-top:12px">
+        <div class="seg" role="group" aria-label="מטרת האופטימיזציה">
+          <button type="button" id="objBoards" aria-pressed="true">מינימום לוחות</button>
+          <button type="button" id="objCost" aria-pressed="false">מחיר הכי נמוך</button>
+        </div>
+        <button class="btn" id="best">מצא גובה אופטימלי (≥183)</button>
+        <p class="optres" id="optRes" hidden></p>
+      </div>
+    </section>
+
+    <section>
+      <h2>מחירים (₪)</h2>
+      <label class="f" style="margin-bottom:8px">מחיר למטר רץ של לוח (לכל אורך שלא הוזן לו מחיר)<input id="ppm" type="number" inputmode="decimal" min="0" step="0.1" placeholder="לא חובה"></label>
+      <div class="muted" style="font-size:12.5px;margin-bottom:4px">מחיר ללוח לפי אורך (ס״מ)</div>
+      <div class="prices" id="priceGrid"></div>
+      <div class="grid2" style="margin-top:8px">
+        <label class="f">קורה/עמוד 5×5 (₪ למטר)<input id="pFrame" type="number" inputmode="decimal" min="0" step="0.1" placeholder="לא חובה"></label>
+        <label class="f">בורג (₪ ליח׳)<input id="pScrew" type="number" inputmode="decimal" min="0" step="0.01" placeholder="לא חובה"></label>
+      </div>
+      <p class="muted" style="margin:8px 0 0;font-size:12.5px">במצב ״מחיר הכי נמוך״ האופטימיזציה בודקת את כל הגבהים (183–230) ואת כל אורכי הלוח שיש להם מחיר, ובוחרת את השילוב הזול ביותר. אורך בלי מחיר לא נבדק. המחירים נשמרים בדפדפן.</p>
     </section>
 
     <section>
@@ -155,6 +187,11 @@ button,select,input{touch-action:manipulation}
         <div class="kpi"><div class="v" id="kBuy">–</div><div class="k">לוחות לקנייה</div></div>
         <div class="kpi" id="kWasteBox"><div class="v" id="kWaste">–</div><div class="k">פחת באורך</div></div>
         <div class="kpi"><div class="v" id="kPieces">–</div><div class="k">חתיכות</div></div>
+      </div>
+      <div class="summary cost" id="costBox" hidden>
+        <div class="kpi"><div class="v" id="kCostBoards">–</div><div class="k">עלות לוחות</div></div>
+        <div class="kpi"><div class="v" id="kCostFrame">–</div><div class="k">קונסטרוקציה וברגים</div></div>
+        <div class="kpi good"><div class="v" id="kCostTotal">–</div><div class="k">סה״כ משוער</div></div>
       </div>
     </section>
 
@@ -211,6 +248,9 @@ function params(){
   return {H:+$('H').value||187, stock:+$('stock').value, W:+$('W').value||12, T:+$('T').value||2, K:+$('K').value||0, P:+$('P').value||150};
 }
 
+function num(id){const v=parseFloat($(id).value);return v>0?v:0}
+function prices(){const board={};STOCKS.forEach(L=>{board[L]=num('pr'+L)});return {board,ppm:num('ppm'),frame:num('pFrame'),screw:num('pScrew')}}
+
 // ---------- board math
 function boardsFor(len,W){
   const n=Math.max(1,Math.ceil(len/W-0.02));
@@ -240,6 +280,51 @@ function compute(pr){
   return {segs,bins,pieces:pieces.length,wastePct:100*waste/(bins.length*pr.stock)};
 }
 
+// ---------- frame quantities (shared by the panel and the price optimizer)
+function frameQty(segs,pr){
+  let posts=0,postLen=0,rail=0,screws=0;
+  segs.forEach(s=>{const ps=postsOf(s,pr);posts+=ps.length;postLen+=ps.length*(pr.H-3-s.base);rail+=railsOf(s,pr).length*s.len;
+    screws+=s.nb*2*railHeights(s.blen,s.base,pr.H).length});
+  return {posts,postLen,rail,bolts:posts*2,screws};
+}
+
+// ---------- prices
+const STOCKS=[300,360,366,400,420,450,480,500,540,600];
+// price of one board of a given stock length: explicit per-board price wins, else per-metre price, else null (not available)
+function boardPrice(stock,pc){
+  const p=pc.board[stock];
+  if(p>0) return p;
+  if(pc.ppm>0) return pc.ppm*stock/100;
+  return null;
+}
+function costOf(res,pr,pc){
+  if(!res.bins) return null;
+  const bp=boardPrice(pr.stock,pc);
+  const fq=frameQty(res.segs,pr);
+  const boards=bp==null?null:res.bins.length*bp;
+  const frame=(pc.frame>0?(fq.postLen+fq.rail)/100*pc.frame:0)+(pc.screw>0?(fq.bolts+fq.screws)*pc.screw:0);
+  return {boards,frame,total:boards==null?null:boards+frame};
+}
+// objective 'boards': fewest boards of the selected stock length (original behaviour; tie -> taller fence)
+// objective 'cost'  : lowest total cost over every height 183-230 and every stock length that has a price
+//                     (tie -> fewer boards, then taller fence)
+function optimize(pr,pc,objective){
+  let best=null;
+  if(objective==='cost'){
+    for(const stock of STOCKS){
+      if(boardPrice(stock,pc)==null) continue;
+      for(let H=183;H<=230;H++){const p={...pr,H,stock},r=compute(p);if(!r.bins)continue;
+        const c=costOf(r,p,pc),n=r.bins.length;
+        if(!best||c.total<best.cost-1e-9||(Math.abs(c.total-best.cost)<=1e-9&&(n<best.n||(n===best.n&&H>best.H))))
+          best={H,stock,n,cost:c.total};}
+    }
+    return best;
+  }
+  for(let H=183;H<=230;H++){const r=compute({...pr,H});if(!r.bins)continue;
+    if(!best||r.bins.length<best.n||(r.bins.length===best.n&&H>best.H))best={H,stock:pr.stock,n:r.bins.length};}
+  return best;
+}
+
 // ---------- UI rendering
 function renderPanel(pr,res){
   const {segs,bins}=res;
@@ -261,12 +346,22 @@ function renderPanel(pr,res){
     return `<div class="pat"><span class="x">×${count}</span><div class="bar" title="לוח ${pr.stock} ס״מ">${spans}${rem}</div></div>`;
   }).join('');
   // frame
-  let posts=0,postLen=0,rail=0;
-  segs.forEach(s=>{const ps=postsOf(s,pr);posts+=ps.length;postLen+=ps.length*(pr.H-3-s.base);rail+=railsOf(s,pr).length*s.len});
+  const {posts,postLen,rail,bolts,screws}=frameQty(segs,pr);
   $('frameRows').innerHTML=`<tr><td>עמודי אורן 5×5</td><td class="n">${posts} יח׳</td><td class="n">${(postLen/100).toFixed(1)} מ׳</td></tr>
    <tr><td>קורות אופקיות 5×5</td><td class="n"></td><td class="n">${(rail/100).toFixed(1)} מ׳</td></tr>
-   <tr><td>ברגים עוברים M8 (2 לעמוד)</td><td class="n">${posts*2} יח׳</td><td></td></tr>
-   <tr><td>ברגי נירוסטה ללוחות (2 לכל קורה)</td><td class="n">${segs.reduce((a,s)=>a+s.nb*2*railHeights(s.blen,s.base,pr.H).length,0)} יח׳</td><td></td></tr>`;
+   <tr><td>ברגים עוברים M8 (2 לעמוד)</td><td class="n">${bolts} יח׳</td><td></td></tr>
+   <tr><td>ברגי נירוסטה ללוחות (2 לכל קורה)</td><td class="n">${screws} יח׳</td><td></td></tr>`;
+  renderCost(pr,res);
+}
+const ils=v=>'₪'+Math.round(v).toLocaleString('he-IL');
+function renderCost(pr,res){
+  const pc=prices(), any=pc.ppm>0||pc.frame>0||pc.screw>0||Object.values(pc.board).some(v=>v>0);
+  $('costBox').hidden=!any; if(!any) return;
+  const c=costOf(res,pr,pc);
+  $('kCostBoards').textContent=c&&c.boards!=null?ils(c.boards):'—';
+  $('kCostFrame').textContent=c?ils(c.frame):'—';
+  $('kCostTotal').textContent=c&&c.total!=null?ils(c.total):'—';
+  $('kCostBoards').parentElement.title=c&&c.boards==null?`אין מחיר ללוח ${pr.stock}`:'';
 }
 function postPositions(len,P){
   const k=Math.max(1,Math.ceil(len/P));const out=[];
@@ -435,11 +530,36 @@ function update(){const pr=params();const res=compute(pr);renderPanel(pr,res);bu
 ['H','stock','W','T','K','P'].forEach(id=>$(id).addEventListener('input',update));
 $('P').addEventListener('input',()=>{ov.post={};update()});
 $('resetFrame').addEventListener('click',()=>{ov.post={};ov.rail={};update()});
+// price inputs (one per stock length), saved in this browser
+$('priceGrid').innerHTML=STOCKS.map(L=>`<label id="lb${L}">${L}<input id="pr${L}" type="number" inputmode="decimal" min="0" step="0.1" aria-label="מחיר ללוח ${L} ס״מ"></label>`).join('');
+const PKEY='pineFencePrices.v1';
+const PRICE_IDS=[...STOCKS.map(L=>'pr'+L),'ppm','pFrame','pScrew'];
+let objective='boards';
+try{const sv=JSON.parse(localStorage.getItem(PKEY)||'{}');PRICE_IDS.forEach(id=>{if(sv[id]!=null)$(id).value=sv[id]});if(sv.objective==='cost')objective='cost'}catch(e){}
+function savePrices(){try{const o={objective};PRICE_IDS.forEach(id=>{if($(id).value!=='')o[id]=$(id).value});localStorage.setItem(PKEY,JSON.stringify(o))}catch(e){}}
+function markPriced(){const pc=prices();STOCKS.forEach(L=>$('lb'+L).classList.toggle('on',boardPrice(L,pc)!=null&&L===+$('stock').value))}
+PRICE_IDS.forEach(id=>$(id).addEventListener('input',()=>{savePrices();markPriced();update()}));
+$('stock').addEventListener('input',markPriced);
+function setObjective(o){objective=o;$('objBoards').setAttribute('aria-pressed',o==='boards');$('objCost').setAttribute('aria-pressed',o==='cost');
+  $('best').textContent=o==='cost'?'מצא שילוב זול ביותר (גובה ≥183 + אורך לוח)':'מצא גובה אופטימלי (≥183)';$('optRes').hidden=true;savePrices()}
+$('objBoards').addEventListener('click',()=>setObjective('boards'));
+$('objCost').addEventListener('click',()=>setObjective('cost'));
+setObjective(objective);markPriced();
 $('best').addEventListener('click',()=>{
-  const pr=params();let best=null;
-  for(let H=183;H<=230;H++){const r=compute({...pr,H});if(!r.bins)continue;
-    if(!best||r.bins.length<best.n||(r.bins.length===best.n&&H>best.H))best={H,n:r.bins.length};}
-  if(best){$('H').value=best.H;update()}
+  const pr=params(),pc=prices(),out=$('optRes');
+  const best=optimize(pr,pc,objective);
+  if(!best){out.hidden=false;out.textContent=objective==='cost'?'הזינו מחיר לפחות לאורך לוח אחד (או מחיר למטר רץ).':'לא נמצא פתרון – הלוח קצר מגובה הגדר.';return}
+  $('H').value=best.H;$('stock').value=best.stock;markPriced();update();
+  out.hidden=false;
+  if(objective==='cost'){
+    // compare with the fewest-boards answer for the length that was selected before
+    const ref=optimize(pr,pc,'boards');let cmp='';
+    if(ref&&boardPrice(ref.stock,pc)!=null){const rp={...pr,H:ref.H},rc=costOf(compute(rp),rp,pc).total,d=rc-best.cost;
+      if(d>0.5)cmp=` · חיסכון של <b>${ils(d)}</b> לעומת מינימום לוחות באורך ${ref.stock}`;}
+    out.innerHTML=`נבחר: לוח <b>${best.stock}</b> · גובה <b>${best.H}</b> · <b>${best.n}</b> לוחות · סה״כ <b>${ils(best.cost)}</b>${cmp}`;
+  }else{
+    out.innerHTML=`נבחר: גובה <b>${best.H}</b> · <b>${best.n}</b> לוחות באורך <b>${best.stock}</b>`;
+  }
 });
 
 setView('in');update();resize();
