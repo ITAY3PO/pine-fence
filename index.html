@@ -132,6 +132,52 @@ button,select,input{touch-action:manipulation}
   .chip{min-height:30px;padding:3px 10px}
   .sep{flex-basis:auto;width:1px;background:var(--line);margin-inline:2px}
 }
+/* PDF report pages (rendered off-screen, A4 at 96dpi) */
+.rp-host{position:fixed;top:0;left:-10000px;width:794px;z-index:-1}
+.rp-page{width:794px;height:1123px;box-sizing:border-box;padding:30px 40px 34px;background:#fff;color:#1B2420;direction:rtl;font-family:var(--f-body);font-size:12px;line-height:1.45;overflow:hidden;position:relative}
+.rp-hd{display:flex;justify-content:space-between;font-size:10px;color:#5E6B64;border-bottom:1px solid #D4DBD6;padding-bottom:4px;margin-bottom:10px}
+.rp-body{height:1030px;overflow:hidden}
+.rp h1{font-family:var(--f-display);font-size:30px;font-weight:700;margin:0 0 2px;color:#1B2420}
+.rp-sub{margin:0 0 10px;color:#5E6B64;font-size:13px}
+.rp h2{font-size:15px;font-weight:600;letter-spacing:0;text-transform:none;color:#2F6B4F;border-bottom:1.5px solid #2F6B4F;padding:10px 0 3px;margin:0 0 8px}
+.rp h3{font-size:13px;font-weight:600;margin:10px 0 4px;color:#1B2420}
+.rp h3 span{font-weight:400;color:#5E6B64;font-size:11.5px}
+.rp-note{margin:0 0 8px;font-size:11px;color:#3D4943}
+.rp-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.rp-kv div{background:#EEF1EE;border-radius:4px;padding:4px 8px}
+.rp-kv span{display:block;font-size:10.5px;color:#5E6B64}
+.rp-kv b{font-family:var(--f-mono);font-weight:500;font-size:13.5px}
+.rp table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:6px}
+.rp th{font-weight:500;color:#5E6B64;font-size:10.5px;text-align:start;padding:3px 4px;border-bottom:1px solid #B9C3BC}
+.rp td{padding:3px 4px;border-bottom:1px solid #E3E8E4;color:#1B2420}
+.rp .n{font-family:var(--f-mono);text-align:end}
+.rp td.m{color:#5E6B64;font-size:10.5px}
+.rp tr.tot td{font-weight:600;border-top:1.5px solid #B9C3BC}
+.rp img.shot{display:block;width:714px;height:428px;border:1px solid #D4DBD6;border-radius:4px}
+.rp-cap{margin:3px 0 10px;font-size:11px;color:#5E6B64}
+.rp-row{display:flex;align-items:center;gap:8px;padding:2px 0;border-bottom:1px solid #EEF1EE}
+.rp-row .x{width:34px;flex:none;font-family:var(--f-mono);font-size:11px;font-weight:500}
+.rp-bar{flex:1;display:flex;height:30px;direction:ltr;border-radius:3px;overflow:hidden;background:#E3E8E4;min-width:0}
+.rp-bar span{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;color:#3A2410;border-right:2px solid #fff;overflow:hidden;white-space:nowrap;min-width:0;direction:rtl}
+.rp-bar em{font-style:normal;font-size:10.5px;font-weight:600}
+.rp-bar small{font-family:var(--f-mono);font-size:9px}
+.rp-bar .t,.rp-bar .cr{background:#D8A86A}.rp-bar .w{background:#E9C694}.rp-bar .e,.rp-bar .cp{background:#C79257}.rp-bar .cx{background:#9FBF8F}
+.rp-bar .k{background:transparent;color:#5E6B64}
+.rp ol{margin:0 0 5px;padding-inline-start:22px;font-size:12px}
+.rp ol li::marker{font-weight:600;color:#2F6B4F}
+.rp-sec{margin-bottom:4px}
+.rp-ends{display:flex;justify-content:space-between;direction:ltr;font-size:10.5px;color:#5E6B64}
+.rp-ends span{direction:rtl}
+.rp-strip{position:relative;height:52px;direction:ltr;margin:3px 0 6px;background:#F3F5F3;border-radius:3px}
+.rp-strip i{position:absolute;top:4px;height:30px;background:#D8A86A;border:0.5px solid #9C6A2F;box-sizing:border-box}
+.rp-strip i.r{background:#A5541B}
+.rp-strip u{position:absolute;top:36px;font-family:var(--f-mono);font-size:9.5px;text-decoration:none;transform:translateX(-50%)}
+.rp-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;direction:ltr;margin-bottom:4px}
+.rp-cell{direction:rtl;border:1px solid #D4DBD6;border-radius:3px;padding:2px 3px;text-align:center;font-size:9.5px;line-height:1.3;color:#3D4943}
+.rp-cell b{display:block;font-family:var(--f-mono);font-size:13px;color:#1B2420}
+.rp-cell span{display:block;white-space:nowrap}
+.rp-cell.r{border-color:#A5541B;background:#FBEFE6}
+.btn:disabled{opacity:.6;cursor:progress}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -251,6 +297,17 @@ button,select,input{touch-action:manipulation}
     </section>
 
     <section>
+      <h2>ייצוא תוכנית בנייה (PDF)</h2>
+      <div class="seg" role="group" aria-label="מה לכלול ב-PDF">
+        <button type="button" id="scPlanks" aria-pressed="false">לוחות בלבד</button>
+        <button type="button" id="scAll" aria-pressed="true">לוחות + קונסטרוקציה</button>
+      </div>
+      <button class="btn" id="pdfBtn">ייצוא PDF</button>
+      <p class="optres" id="pdfRes" hidden></p>
+      <p class="muted" style="margin:6px 0 0;font-size:12.5px">כולל סיכום, רשימת קנייה ועלות, הדמיה מבפנים ומבחוץ, תוכניות חיתוך, הוראות בנייה ומפת הצבה לכל לוח.</p>
+    </section>
+
+    <section>
       <h2>הערות</h2>
       <ul class="notes">
         <li>סדר השכבות מבחוץ פנימה: גדר ברזל ← עמודי אורן 5×5 מוברגים לעמודי הברזל ← קורות אופקיות 5×5 ← לוחות.</li>
@@ -339,15 +396,28 @@ function railPieces(len,posts,stock){
   out.push({len:+(len-start).toFixed(1),joint:out.length?'end':null});
   return out;
 }
+// short codes per segment (used for piece IDs in the cut plans and the PDF placement map)
+const CODE={S:'ד',WA:'מע״א',WB:'מע״ב',EA:'מז״א',EB:'מז״ב'};
+// true when the along-segment index runs right-to-left for someone standing inside the yard
+function segRev(s){return s.d[0]*s.n[1]-s.d[1]*s.n[0]<0}
 function consPieces(segs,pr,stock){
   const pcs=[];
   segs.forEach(s=>{
-    const posts=postsOf(s,pr), pl=+(pr.H-3-s.base).toFixed(1);
-    posts.forEach(()=>splitEven(pl,stock).forEach(len=>pcs.push({len,kind:'cp',label:'עמוד '+s.name})));
-    railsOf(s,pr).forEach(()=>railPieces(s.len,posts,stock).forEach(p=>pcs.push({len:p.len,kind:'cr',label:'קורה '+s.name,split:!!p.joint})));
+    const posts=postsOf(s,pr), pl=+(pr.H-3-s.base).toFixed(1), rev=segRev(s), c=CODE[s.id];
+    const order=posts.map((x,j)=>({j,l:rev?s.len-x:x})).sort((a,b)=>a.l-b.l), kOf={};order.forEach((o,k)=>kOf[o.j]=k+1);
+    posts.forEach((x,j)=>{const parts=splitEven(pl,stock);
+      parts.forEach((len,pi)=>pcs.push({len,kind:'cp',label:'עמוד '+s.name,seg:s.id,split:parts.length>1,
+        id:`ע ${c}-${kOf[j]}`+(parts.length>1?`/${pi+1}`:''),at:+(rev?s.len-x:x).toFixed(1)}))});
+    const rs=railsOf(s,pr), lv=rs.map(y=>y).sort((a,b)=>a-b), names=rs.length===3?['ת','א','ע']:rs.length===2?['ת','ע']:rs.map((_,i)=>String(i+1));
+    lv.forEach((y,li)=>{let st=0;
+      const seq=railPieces(s.len,posts,stock).map(p=>{const a=st;st+=p.len;return {...p,a,b:st}});
+      const fl=rev?seq.map(p=>({...p,l:s.len-p.b})).reverse():seq.map(p=>({...p,l:p.a}));
+      fl.forEach((p,pi)=>pcs.push({len:p.len,kind:'cr',label:'קורה '+s.name,split:!!p.joint,joint:p.joint,seg:s.id,
+        id:`ק ${c}-${names[li]}`+(fl.length>1?String(pi+1):''),y,left:+p.l.toFixed(1)}))});
   });
-  extras.forEach(x=>{if(!(x.len>0)||!(x.qty>0))return;
-    for(let q=0;q<Math.round(x.qty);q++)splitEven(x.len,stock).forEach((len,_,a)=>pcs.push({len,kind:'cx',label:x.name||'תוספת',split:a.length>1}))});
+  extras.forEach((x,xi)=>{if(!(x.len>0)||!(x.qty>0))return;const qn=Math.round(x.qty);
+    for(let q=0;q<qn;q++)splitEven(x.len,stock).forEach((len,pi,a)=>pcs.push({len,kind:'cx',label:x.name||'תוספת',split:a.length>1,
+      id:`ת${xi+1}`+(qn>1?`-${q+1}`:'')+(a.length>1?`/${pi+1}`:'')}))});
   return pcs;
 }
 function splitEven(len,stock){const k=Math.max(1,Math.ceil(len/stock-1e-9));return Array(k).fill(+(len/k).toFixed(1))}
@@ -617,7 +687,7 @@ function buildScene(pr,res){
     const el=document.createElement('div');el.className='lbl3d';el.innerHTML=`${s.name} · <b>${s.len}</b>`;
     el.style.position='absolute';el.style.transform='translate(-50%,-50%)';labelLayer.appendChild(el);
     const mid=[s.o[0]+s.d[0]*s.len/2+s.n[0]*-30, s.o[1]+s.d[1]*s.len/2+s.n[1]*-30];
-    labels.push({el,pos:new THREE.Vector3(mid[0],pr.H+18,mid[1])});
+    labels.push({el,text:`${s.name} · ${s.len}`,pos:new THREE.Vector3(mid[0],pr.H+18,mid[1])});
   });
   applyVis();
 }
@@ -704,6 +774,214 @@ $('best').addEventListener('click',()=>{
   }else{
     out.innerHTML=`נבחר: גובה <b>${best.H}</b> · <b>${best.n}</b> לוחות באורך <b>${best.stock}</b>`;
   }
+});
+
+// ---------- PDF build-plan export (report pages are laid out as HTML, rendered with html2canvas, packed by jsPDF;
+// rendering through the browser's own text layout keeps Hebrew RTL correct)
+let pdfScope='all';
+function setScope(s){pdfScope=s;$('scPlanks').setAttribute('aria-pressed',s==='planks');$('scAll').setAttribute('aria-pressed',s==='all')}
+$('scPlanks').addEventListener('click',()=>setScope('planks'));
+$('scAll').addEventListener('click',()=>setScope('all'));
+const f1=v=>String(Math.round(v*10)/10);
+function segEnd(s,atEnd){return atEnd?[s.o[0]+s.d[0]*s.len,s.o[1]+s.d[1]*s.len]:s.o}
+function endName(s,atEnd){const pt=segEnd(s,atEnd);
+  const nb=SEGS.find(t=>t.id!==s.id&&[segEnd(t,false),segEnd(t,true)].some(p=>Math.abs(p[0]-pt[0])<1&&Math.abs(p[1]-pt[1])<1));
+  return nb?'מפגש עם '+nb.name:'קצה הגדר'}
+// planks of a segment ordered left -> right as seen from inside the yard
+function plankLayout(s,pr){
+  const rev=segRev(s),G=pr.G||0,out=[];
+  for(let i=0;i<s.nb;i++){const w=i<s.nb-1?pr.W:s.last,s0=i*(pr.W+G);out.push({i,w,left:+(rev?s.len-(s0+w):s0).toFixed(1)})}
+  out.sort((a,b)=>a.left-b.left);out.forEach((p,k)=>p.pos=k+1);return out;
+}
+function planData(scope){
+  const pr=params(),res=compute(pr),pc=prices();
+  if(!res.bins) throw new Error('הלוח שאצל הספק קצר מגובה הגדר.');
+  const segs=res.segs.map(s=>{const rev=segRev(s);return {...s,rev,planks:plankLayout(s,pr),
+    rails:[...railsOf(s,pr)].sort((a,b)=>a-b),posts:postsOf(s,pr).map(x=>+(rev?s.len-x:x).toFixed(1)).sort((a,b)=>a-b),
+    leftEnd:endName(s,rev),rightEnd:endName(s,!rev)}});
+  const pieces=[];segs.forEach(s=>s.planks.forEach(p=>{p.id=`${CODE[s.id]}-${p.pos}`;pieces.push({len:s.blen,grp:s.grp,seg:s.id,pos:p.pos,w:p.w,id:p.id,ref:p})}));
+  const bins=pack(pieces,pr.stock,pr.K);bins.forEach((b,i)=>b.items.forEach(it=>{it.board=i+1;it.ref.board=i+1}));
+  const cp=scope==='all'?consPlan(res.segs,pr,pc,objective):null;
+  if(scope==='all'&&!cp) throw new Error('אחד מחלקי הקונסטרוקציה ארוך מהקורה שנבחרה.');
+  if(cp)cp.bins.forEach((b,i)=>b.items.forEach(it=>it.bar=i+1));
+  const fq=frameQty(res.segs,pr);
+  const gaps=segs.reduce((a,s)=>a+s.gaps,0), spacers=segs.reduce((a,s)=>a+s.gaps*railHeights(s.blen,s.base,pr.H).length,0);
+  return {pr,res,pc,segs,bins,cp,fq,gaps,spacers,scope};
+}
+let capR=null;
+function capture3D(view,hideBoards){
+  const W=1200,H=720;
+  if(!capR){capR=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});capR.setPixelRatio(1);capR.shadowMap.enabled=true;capR.shadowMap.type=THREE.PCFSoftShadowMap}
+  capR.setSize(W,H,false);
+  const cam=new THREE.PerspectiveCamera(42,W/H,5,8000),[p,t]=VIEWS[view],k=view==='out'?0.72:Math.max(1,Math.min(2.2,1.6/(W/H)));
+  cam.position.set(...p.map((c,i)=>t[i]+(c-t[i])*k));cam.lookAt(new THREE.Vector3(...t));cam.updateMatrixWorld();
+  const keep={b:G.boards.visible,f:G.frame.visible,i:G.iron.visible,bg:scene.background,fog:scene.fog};
+  G.boards.visible=!hideBoards;G.frame.visible=true;G.iron.visible=true;
+  scene.background=new THREE.Color('#DCE3DE');scene.fog=new THREE.Fog(0xDCE3DE,1800,4200);
+  capR.render(scene,cam);
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(capR.domElement,0,0);
+  G.boards.visible=keep.b;G.frame.visible=keep.f;G.iron.visible=keep.i;scene.background=keep.bg;scene.fog=keep.fog;
+  x.font='600 22px "IBM Plex Sans Hebrew", "Arial Hebrew", sans-serif';x.direction='rtl';x.textAlign='center';x.textBaseline='middle';
+  const v=new THREE.Vector3();
+  labels.forEach(l=>{v.copy(l.pos).project(cam);if(v.z>=1||Math.abs(v.x)>1.05||Math.abs(v.y)>1.05)return;
+    const px=(v.x+1)/2*W,py=(1-v.y)/2*H,w=x.measureText(l.text).width+18;
+    x.fillStyle='rgba(248,250,248,.93)';x.strokeStyle='#B9C3BC';x.lineWidth=1.5;x.beginPath();x.rect(px-w/2,py-16,w,32);x.fill();x.stroke();
+    x.fillStyle='#1B2420';x.fillText(l.text,px,py+1)});
+  return c.toDataURL('image/jpeg',0.9);
+}
+function barHtml(items,rem,cls,lab){
+  return `<div class="rp-bar">${items.map(i=>`<span class="${cls(i)}" style="flex:${i.len}"><em>${esc(lab(i))}</em><small>${f1(i.len)}</small></span>`).join('')}${rem>0.5?`<span class="k" style="flex:${rem}"><small>${f1(rem)}</small></span>`:''}</div>`;
+}
+function reportBlocks(d,shots){
+  const {pr,res,pc,segs,bins,cp,fq}=d, all=d.scope==='all', B=[];
+  const xs=extras.filter(x=>x.len>0&&x.qty>0);
+  const date=new Date().toLocaleDateString('he-IL');
+  const total=segs.reduce((a,s)=>a+s.len,0), nPl=segs.reduce((a,s)=>a+s.nb,0);
+  // ---- title + summary
+  B.push(`<div><h1>תוכנית בנייה · גדר האורן</h1><p class="rp-sub">${all?'לוחות + קונסטרוקציה':'לוחות בלבד'} · הופק ב-${date}</p></div>`);
+  B.push(`<h2 class="rp-keep">סיכום ומידות</h2>`);
+  const kv=[['גובה גדר',pr.H+' ס״מ'],['אורך כולל',f1(total)+' ס״מ'],['קטעים',segs.length],['רוחב לוח',f1(pr.W)+' ס״מ'],['עובי לוח',f1(pr.T)+' ס״מ'],
+    ['אורך לוח אצל הספק',pr.stock+' ס״מ'],['מרווח בין לוחות',pr.G>0?f1(pr.G)+' ס״מ (ספייסרים)':'בלי מרווח (צמודים)'],['עובי מסור',f1(pr.K)+' ס״מ'],
+    ['מרווח עמודים מקס׳',pr.P+' ס״מ'],['מטרת אופטימיזציה',objective==='cost'?'מחיר הכי נמוך':'מינימום לוחות'],['לוחות בגדר',nPl],['פחת לוחות',res.wastePct.toFixed(1)+'%']];
+  if(all)kv.push(['אורך קורה 5×5',cp.stock+' ס״מ'],['פחת קונסטרוקציה',cp.wastePct.toFixed(1)+'%'],['5×5 נטו',f1(cp.net/100)+' מ׳']);
+  B.push(`<div class="rp-kv">${kv.map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>`);
+  B.push(`<h2 class="rp-keep">מידות לפי קטע</h2>`);
+  B.push(`<table><thead><tr><th>קטע</th><th>קוד</th><th class="n">רוחב</th><th class="n">בסיס</th><th class="n">אורך לוח</th><th class="n">לוחות</th><th class="n">לוח אחרון (רוחב)</th>${all?'<th class="n">עמודים</th><th class="n">קורות</th>':''}</tr></thead><tbody>${
+    segs.map(s=>`<tr><td>${s.name}</td><td>${CODE[s.id]}</td><td class="n">${s.len}</td><td class="n">${s.base}</td><td class="n">${s.blen}</td><td class="n">${s.nb}</td><td class="n">${f1(s.last)}${s.last<pr.W?' ✂':''}</td>${all?`<td class="n">${s.posts.length}</td><td class="n">${s.rails.length}</td>`:''}</tr>`).join('')
+    }<tr class="tot"><td>סה״כ</td><td></td><td class="n">${total}</td><td></td><td></td><td class="n">${nPl}</td><td></td>${all?`<td class="n">${fq.posts}</td><td></td>`:''}</tr></tbody></table>`);
+  // ---- shopping list
+  const buy=[[`לוחות אורן באורך ${pr.stock} ס״מ, רוחב ${f1(pr.W)}, עובי ${f1(pr.T)}`,bins.length+' יח׳',`${res.pieces} חתיכות`]];
+  if(all)buy.push([`קורות אורן 5×5 באורך ${cp.stock} ס״מ`,cp.n+' יח׳',`${cp.pieces.length} חתיכות · ${f1(cp.net/100)} מ׳ נטו`]);
+  if(pr.G>0)buy.push([`ספייסרים ${f1(pr.G)} ס״מ`,d.spacers+' יח׳',`${d.gaps} מרווחים × מספר הקורות (אפשר פחות אם משתמשים שוב)`]);
+  buy.push(['ברגי נירוסטה ללוחות',fq.screws+' יח׳','2 לכל לוח בכל קורה']);
+  if(all)buy.push(['ברגים עוברים M8',fq.bolts+' יח׳','2 לכל עמוד אורן']);
+  B.push(`<h2 class="rp-keep">רשימת קנייה</h2>`);
+  B.push(`<table><thead><tr><th>פריט</th><th class="n">כמות</th><th>הערה</th></tr></thead><tbody>${buy.map(r=>`<tr><td>${r[0]}</td><td class="n"><b>${r[1]}</b></td><td class="m">${r[2]}</td></tr>`).join('')}</tbody></table>`);
+  // ---- cost
+  const bp=boardPrice(pr.stock,pc), anyP=bp!=null||pc.screw>0||(all&&cp.price!=null);
+  if(anyP){const rows=[];let sum=0,miss=false;
+    const add=(k,v,note)=>{rows.push([k,v==null?'—':ils(v),note||'']);if(v==null)miss=true;else sum+=v};
+    add(`לוחות (${bins.length} × ${pr.stock})`,bp==null?null:bins.length*bp,bp==null?'אין מחיר לאורך הזה':'');
+    if(all)add(`קורות 5×5 (${cp.n} × ${cp.stock})`,cp.price,cp.price==null?'אין מחיר לאורך הזה':'');
+    if(pc.screw>0){add(`ברגי נירוסטה (${fq.screws})`,fq.screws*pc.screw);if(all)add(`ברגים עוברים (${fq.bolts})`,fq.bolts*pc.screw)}
+    B.push(`<h2 class="rp-keep">עלות משוערת</h2>`);
+    B.push(`<table><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td class="n">${r[1]}</td><td class="m">${r[2]}</td></tr>`).join('')}<tr class="tot"><td>סה״כ${miss?' (חלקי)':''}</td><td class="n">${ils(sum)}</td><td></td></tr></tbody></table>`);
+  }
+  // ---- 3D
+  B.push('<pagebreak>');
+  B.push(`<h2 class="rp-keep">הדמיה</h2>`);
+  shots.forEach(s=>B.push(`<div><img class="shot" src="${s.src}" width="714" height="428"><p class="rp-cap">${s.cap}</p></div>`));
+  // ---- plank cut plan (continues under the images when there is room)
+  B.push(`<h2 class="rp-keep">תוכנית חיתוך · לוחות</h2>`);
+  B.push(`<p class="rp-note rp-keep">כל שורה היא לוח אחד של ${pr.stock} ס״מ מהספק (מספר הלוח משמאל). כל חתיכה מסומנת <b>קוד קטע-מיקום</b>: ${segs.map(s=>`${CODE[s.id]} = ${s.name}`).join(' · ')}. המיקום נספר משמאל לימין במבט מבפנים, כמו במפת ההצבה. מתחת למזהה: אורך החתיכה (ס״מ). אפור: שארית.</p>`);
+  bins.forEach((b,i)=>B.push(`<div class="rp-row"><span class="x">#${i+1}</span>${barHtml(b.items,b.rem,it=>it.grp,it=>it.id+(it.w<pr.W?' ✂':''))}</div>`));
+  // ---- construction cut plan
+  if(all){
+    B.push('<pagebreak>');
+    B.push(`<h2 class="rp-keep">תוכנית חיתוך · קונסטרוקציה 5×5</h2>`);
+    B.push(`<p class="rp-note rp-keep">כל שורה היא קורה אחת של ${cp.stock} ס״מ. <b>ע</b> = עמוד (ע ד-1 = עמוד 1 בדרום, משמאל). <b>ק</b> = קורה אופקית (ת = תחתונה, א = אמצעית, ע = עליונה; מספר בסוף = חלק משמאל אם הקורה מחולקת). <b>ת</b> = תוספת${xs.length?' ('+xs.map((x,i)=>`ת${i+1} = ${esc(x.name||'תוספת')}`).join(', ')+')':''}. ⇹ = חתיכה שמתחברת לחתיכה נוספת.</p>`);
+    cp.bins.forEach((b,i)=>B.push(`<div class="rp-row"><span class="x">#${i+1}</span>${barHtml(b.items,b.rem,it=>it.kind,it=>it.id+(it.split?' ⇹':''))}</div>`));
+  }
+  // ---- steps
+  B.push('<pagebreak>');
+  B.push(`<h2 class="rp-keep">הוראות בנייה, שלב אחר שלב</h2>`);
+  const st=[];const railsN=n=>n===3?'שלוש קורות':'שתי קורות';
+  if(all){
+    st.push(`<b>חיתוך הקונסטרוקציה.</b> חותכים את קורות ה-5×5 לפי ״תוכנית חיתוך · קונסטרוקציה״ (${cp.n} קורות של ${cp.stock} ס״מ) ומסמנים בעיפרון על כל חתיכה את המזהה שלה.`);
+    st.push(`<b>עמודי אורן.</b> בכל קטע מציבים את העמודים במרחקים שבטבלת ״קונסטרוקציה לפי קטע״ (מרחק מרכז העמוד מהקצה השמאלי, במבט מבפנים), צמודים לצד הפנימי של גדר הברזל. העמוד עומד על בסיס הקטע (קרקע או ראש הקיר) ונגמר 3 ס״מ מתחת לראש הגדר. סה״כ ${fq.posts} עמודים.`);
+    st.push(`<b>חיבור לברזל.</b> מחברים כל עמוד לעמוד הברזל בשני ברגים עוברים M8: אחד ליד הבסיס ואחד ליד ראש עמוד הברזל (${fq.bolts} ברגים). בדרום ובמזרח א׳ העמודים עולים כ-77 ס״מ מעל הברזל, ובמזרח ב׳ כדאי לעגן אותם גם לקיר עם זוויתן ודיבל פלדה.`);
+    const splitRail=cp.pieces.some(p=>p.kind==='cr'&&p.split);
+    st.push(`<b>קורות אופקיות.</b> מבריגים את הקורות לצד הפנימי של העמודים, בגבהים שבטבלה (גובה תחתית הקורה מהקרקע). קטע שבו לוח גבוה מ-150 ס״מ מקבל ${railsN(3)}, אחר ${railsN(2)}.${splitRail?' קורה שמחולקת לכמה חלקים מתחברת על מרכז עמוד: מבריגים את שני הקצוות לאותו עמוד.':''}${cp.pieces.some(p=>p.joint==='free')?' <b>שימו לב:</b> יש חיבור שלא נופל על עמוד (מסומן בטבלה); מוסיפים שם עמוד או פלטת חיבור.':''}`);
+    if(xs.length)st.push(`<b>תוספות.</b> מתקינים את התוספות: ${xs.map((x,i)=>`ת${i+1} ${esc(x.name||'תוספת')} (${Math.round(x.qty)} × ${f1(x.len)} ס״מ)`).join(', ')}.`);
+    st.push(`<b>בדיקה.</b> בודקים פלס לקורות ואנך לעמודים לפני שמתחילים עם הלוחות.`);
+  }else{
+    st.push(`<b>לפני שמתחילים.</b> התוכנית מניחה שהקונסטרוקציה כבר עומדת, עם קורות אופקיות בגבהים: ${segs.map(s=>`${s.name} ${s.rails.map(y=>f1(y)).join('/')}`).join(' · ')} ס״מ (תחתית הקורה מהקרקע).`);
+  }
+  st.push(`<b>חיתוך הלוחות.</b> חותכים את הלוחות לפי ״תוכנית חיתוך · לוחות״ (${bins.length} לוחות של ${pr.stock} ס״מ) ומסמנים על כל חתיכה את המזהה שלה (למשל ${segs[0].planks[0].id}). כל המזהים מופיעים במפת ההצבה.`);
+  st.push(`<b>ניסור לרוחב.</b> בכל קטע הלוח שמסומן ✂ מנוסר לאורכו לרוחב שבמפת ההצבה. מומלץ למדוד את הרווח שנשאר בפועל לפני הניסור.`);
+  st.push(`<b>הצבת הלוחות.</b> בכל קטע מתחילים מהקצה השמאלי (במבט מבפנים) ומתקדמים ימינה לפי מפת ההצבה: תחתית הלוח על בסיס הקטע, ראש הלוח בגובה ${pr.H} ס״מ.`);
+  st.push(pr.G>0?`<b>מרווחים.</b> בין כל שני לוחות שמים ספייסר של ${f1(pr.G)} ס״מ בגובה כל קורה (${d.gaps} מרווחים, ${d.spacers} ספייסרים אם משאירים אותם; אפשר להוציא ולהשתמש שוב אחרי ההברגה).`:`<b>בלי מרווח.</b> הלוחות צמודים זה לזה.`);
+  st.push(`<b>הברגה.</b> כל לוח מוברג בשני ברגי נירוסטה בכל קורה (${fq.screws} ברגים). כל כמה לוחות בודקים מול עמודת ״מרחק״ במפת ההצבה ומתקנים סטייה מצטברת.`);
+  B.push(...st.map((s,i)=>`<ol start="${i+1}"><li>${s}</li></ol>`));
+  // ---- construction per section
+  if(all){
+    B.push(`<h2 class="rp-keep">קונסטרוקציה לפי קטע</h2>`);
+    B.push(`<p class="rp-note rp-keep">מרחקים בס״מ מהקצה השמאלי של הקטע במבט מבפנים. גבהים בס״מ מהקרקע.</p>`);
+    segs.forEach(s=>{
+      const posts=cp.pieces.filter(p=>p.kind==='cp'&&p.seg===s.id), rails=cp.pieces.filter(p=>p.kind==='cr'&&p.seg===s.id);
+      B.push(`<div class="rp-sec"><h3>${s.name} <span>(${CODE[s.id]}) · שמאל: ${s.leftEnd} · ימין: ${s.rightEnd}</span></h3>
+       <table><thead><tr><th>עמוד</th><th class="n">מרכז, מרחק</th><th class="n">מגובה</th><th class="n">עד גובה</th><th>מקורה #</th></tr></thead><tbody>${
+        [...posts].sort((a,b)=>a.at-b.at).map(p=>`<tr><td>${p.id}</td><td class="n">${f1(p.at)}</td><td class="n">${s.base}</td><td class="n">${f1(pr.H-3)}</td><td>${p.bar}</td></tr>`).join('')}</tbody></table>
+       <table><thead><tr><th>קורה</th><th class="n">גובה תחתית</th><th class="n">ממרחק</th><th class="n">עד מרחק</th><th class="n">אורך</th><th>מקורה #</th></tr></thead><tbody>${
+        rails.map(p=>`<tr><td>${p.id}</td><td class="n">${f1(p.y)}</td><td class="n">${f1(p.left)}</td><td class="n">${f1(p.left+p.len)}</td><td class="n">${f1(p.len)}</td><td>${p.bar}${p.joint==='free'?' · חיבור בלי עמוד!':''}</td></tr>`).join('')}</tbody></table></div>`);
+    });
+    const xp=cp.pieces.filter(p=>p.kind==='cx');
+    if(xp.length)B.push(`<div class="rp-sec"><h3>תוספות</h3><table><thead><tr><th>מזהה</th><th>שם</th><th class="n">אורך</th><th>מקורה #</th></tr></thead><tbody>${xp.map(p=>`<tr><td>${p.id}</td><td>${esc(p.label)}</td><td class="n">${f1(p.len)}</td><td>${p.bar}</td></tr>`).join('')}</tbody></table></div>`);
+  }
+  // ---- placement map
+  B.push('<pagebreak>');
+  B.push(`<h2 class="rp-keep">מפת הצבת לוחות</h2>`);
+  B.push(`<p class="rp-note rp-keep">כל קטע מוצג במבט מבפנים, משמאל לימין. בכל משבצת: <b>מיקום</b> (המזהה על החתיכה הוא קוד הקטע ואחריו המיקום), <b>מרחק</b> = מרחק הצד השמאלי של הלוח מהקצה השמאלי של הקטע (ס״מ), <b>לוח #</b> = הלוח בתוכנית החיתוך שממנו נחתכה החתיכה. ✂ = לנסר לרוחב.</p>`);
+  segs.forEach(s=>{
+    const sc=714/s.len, ticks=s.planks.filter(p=>p.pos===1||p.pos===s.nb||(p.pos%5===0&&s.nb-p.pos>=2));
+    B.push(`<div class="rp-sec rp-keep"><h3>${s.name} <span>(${CODE[s.id]}) · ${s.nb} לוחות באורך ${s.blen} ס״מ · רוחב קטע ${s.len} ס״מ</span></h3>
+      <div class="rp-ends"><span>שמאל: ${s.leftEnd} ◀</span><span>▶ ימין: ${s.rightEnd}</span></div>
+      <div class="rp-strip">${s.planks.map(p=>`<i class="${p.w<pr.W?'r':''}" style="left:${(p.left*sc).toFixed(2)}px;width:${(p.w*sc).toFixed(2)}px"></i>`).join('')}${ticks.map(p=>`<u style="left:${((p.left+p.w/2)*sc).toFixed(1)}px">${p.pos}</u>`).join('')}</div></div>`);
+    for(let r=0;r<s.planks.length;r+=30){
+      B.push(`<div class="rp-grid">${s.planks.slice(r,r+30).map(p=>`<div class="rp-cell${p.w<pr.W?' r':''}"><b>${p.pos}</b><span>${CODE[s.id]}-${p.pos}</span><span>מרחק ${f1(p.left)}</span><span>לוח #${p.board}</span>${p.w<pr.W?`<span>✂ רוחב ${f1(p.w)}</span>`:''}</div>`).join('')}</div>`);
+    }
+  });
+  return B;
+}
+function paginate(blocks,host){
+  const pages=[];let body;
+  const newPage=()=>{const pg=document.createElement('div');pg.className='rp-page';
+    pg.innerHTML=`<div class="rp-hd"><span>גדר האורן · תוכנית בנייה</span><span class="rp-pn"></span></div><div class="rp-body"></div>`;
+    host.appendChild(pg);body=pg.querySelector('.rp-body');pages.push(pg)};
+  newPage();
+  for(const b of blocks){
+    if(b==='<pagebreak>'){if(body.children.length)newPage();continue}
+    const t=document.createElement('template');t.innerHTML=b.trim();const el=t.content.firstElementChild;body.appendChild(el);
+    if(body.scrollHeight>body.clientHeight+1&&body.children.length>1){
+      body.removeChild(el);const carry=[];
+      while(body.lastElementChild&&body.lastElementChild.classList.contains('rp-keep')&&body.children.length>1)carry.unshift(body.removeChild(body.lastElementChild));
+      newPage();carry.forEach(c=>body.appendChild(c));body.appendChild(el);
+    }
+  }
+  pages.forEach((p,i)=>p.querySelector('.rp-pn').textContent=`עמוד ${i+1} מתוך ${pages.length}`);
+  return pages;
+}
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('לא הצלחתי לטעון '+src));document.head.appendChild(s)})}
+async function ensurePdfLibs(){
+  if(!window.html2canvas)await loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');
+  if(!(window.jspdf&&window.jspdf.jsPDF))await loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js');
+}
+async function buildPlanPdf(scope,onProgress=()=>{}){
+  await ensurePdfLibs();if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+  update();
+  const d=planData(scope);
+  const shots=[{src:capture3D('in',false),cap:'מבפנים (מהחצר)'},{src:capture3D('out',false),cap:'מבחוץ'}];
+  if(scope==='all')shots.push({src:capture3D('in',true),cap:'הקונסטרוקציה מבפנים, בלי הלוחות'});
+  if(capR){capR.dispose();capR.forceContextLoss&&capR.forceContextLoss();capR=null}
+  const host=document.createElement('div');host.className='rp rp-host';host.dir='rtl';document.body.appendChild(host);
+  try{
+    const pages=paginate(reportBlocks(d,shots),host);
+    await Promise.all([...host.querySelectorAll('img')].map(im=>im.decode?im.decode().catch(()=>{}):null));
+    const doc=new window.jspdf.jsPDF({unit:'pt',format:'a4',compress:true});
+    doc.setProperties({title:'Pine fence build plan',creator:'גדר האורן'});
+    for(let i=0;i<pages.length;i++){onProgress(i+1,pages.length);
+      const c=await html2canvas(pages[i],{scale:2,backgroundColor:'#ffffff',logging:false,useCORS:true,windowWidth:900,scrollX:0,scrollY:0});
+      if(i)doc.addPage();doc.addImage(c.toDataURL('image/jpeg',0.9),'JPEG',0,0,595.28,841.89,undefined,'FAST');c.width=c.height=0;}
+    return {doc,pages:pages.length};
+  }finally{host.remove()}
+}
+$('pdfBtn').addEventListener('click',async()=>{
+  const btn=$('pdfBtn'),out=$('pdfRes');btn.disabled=true;out.hidden=false;out.textContent='מכין PDF…';
+  try{const {doc,pages}=await buildPlanPdf(pdfScope,(i,n)=>{out.textContent=`מכין PDF… עמוד ${i} מתוך ${n}`});
+    const name=`pine-fence-plan-${pdfScope==='all'?'full':'planks'}-${new Date().toISOString().slice(0,10)}.pdf`;
+    doc.save(name);out.innerHTML=`נשמר: <b>${name}</b> · ${pages} עמודים`;
+  }catch(e){out.textContent='הייצוא נכשל: '+(e&&e.message||e)}
+  finally{btn.disabled=false}
 });
 
 setView('in');update();resize();booted=true;
