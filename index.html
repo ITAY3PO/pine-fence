@@ -286,6 +286,8 @@ button,select,input{touch-action:manipulation}
       <div id="patterns"></div>
       <p class="optres" id="cutFoot"></p>
       <div class="legend"><span><i style="background:#D8A86A"></i>דרום / מזרח א׳ / מערב א׳</span><span><i style="background:#E9C694"></i>מזרח ב׳</span><span><i style="background:#C79257"></i>מערב ב׳</span></div>
+      <button class="btn" id="supPdf" type="button" style="margin-top:10px">תוכנית חיתוך לוחות לספק (PDF)</button>
+      <p class="optres" id="supPdfRes" hidden></p>
     </section>
 
     <section>
@@ -1083,6 +1085,29 @@ $('pdfBtn').addEventListener('click',async()=>{
     doc.save(name);out.innerHTML=`נשמר: <b>${name}</b> · ${pages} עמודים`;
   }catch(e){out.textContent='הייצוא נכשל: '+(e&&e.message||e)}
   finally{btn.disabled=false}
+});
+
+// Supplier sheet: board cut list only (same bins as the on-page plan), then the browser print dialog.
+$('supPdf').addEventListener('click',()=>{
+  const pr0=params(),res=resolve(pr0,prices()),pr={...pr0,stock:res.stock},out=$('supPdfRes');
+  if(!res.bins){out.hidden=false;out.textContent='הלוח שאצל הספק קצר מגובה הגדר.';return}
+  const groups=new Map();
+  res.bins.forEach(b=>{const key=b.items.map(i=>i.len).join('|');const g=groups.get(key);g?g.count++:groups.set(key,{count:1,items:b.items})});
+  const rows=[...groups.values()].sort((a,b)=>b.count-a.count).map(({count,items})=>{
+    const parts=[];const seen=new Map();
+    items.forEach(it=>{const k=String(it.len),p=seen.get(k);if(p)p.n++;else{const n={len:it.len,n:1};seen.set(k,n);parts.push(n)}});
+    return count+' × לוח '+mLabel(pr.stock)+' → '+parts.map(p=>p.n+'×'+p.len).join(' + ');
+  });
+  const html='<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>תוכנית חיתוך לוחות לספק</title><style>'
+    +'@page{margin:14mm}body{margin:0;color:#111;font:16px/1.5 "IBM Plex Sans Hebrew","Arial Hebrew","Segoe UI",Arial,sans-serif}'
+    +'h1{font-size:22px;margin:0 0 4px}p.note{margin:0 0 12px;font-size:13px}'
+    +'ul{margin:0;padding:0;list-style:none}li{padding:7px 0;border-bottom:1px solid #ccc;font-variant-numeric:tabular-nums}'
+    +'.tot{margin-top:14px;font-weight:700}</style></head><body><h1>תוכנית חיתוך לוחות לספק</h1>'
+    +'<p class="note">אורכי החיתוך בס״מ</p><ul>'+rows.map(r=>'<li>'+esc(r)+'</li>').join('')+'</ul>'
+    +'<p class="tot">סה״כ: '+esc(res.bins.length+' × לוח '+mLabel(pr.stock))+'</p></body></html>';
+  const w=window.open('','supplier-board-cut');
+  if(!w){out.hidden=false;out.textContent='הדפדפן חסם את חלון ההדפסה. אפשרו חלונות קופצים ונסו שוב.';return}
+  out.hidden=true;w.document.open();w.document.write(html);w.document.close();w.focus();w.print();
 });
 
 setView('in');update();resize();booted=true;
