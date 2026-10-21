@@ -61,6 +61,7 @@ td{padding:5px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabu
 td.n,th.n{font-family:var(--f-mono);text-align:end}
 .pat{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
 .pat .x{font-family:var(--f-mono);font-weight:500;min-width:36px}
+.pat .stk{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);min-width:52px;flex:none}
 .bar{flex:1;display:flex;height:22px;direction:ltr;border-radius:3px;overflow:hidden;background:var(--line);min-width:0}
 .bar span{display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:11px;color:#3A2410;border-inline-end:2px solid var(--panel);overflow:hidden;white-space:nowrap}
 .bar span.t{background:#D8A86A} .bar span.w{background:#E9C694} .bar span.e{background:#C79257}
@@ -208,24 +209,27 @@ button,select,input{touch-action:manipulation}
       <div class="grid2">
         <label class="f">גובה גדר (ס״מ)<input id="H" type="number" inputmode="decimal" min="150" max="240" step="1" value="187"></label>
         <label class="f">אורך לוח אצל הספק<select id="stock">
-          <option>300</option><option>360</option><option>366</option><option>400</option><option>420</option>
-          <option>450</option><option selected>480</option><option>500</option><option>540</option><option>600</option>
+          <option value="auto" selected>אופטימלי (4.2 / 5 / 6 מ׳)</option>
+          <option value="420">420 (4.2 מ׳)</option>
+          <option value="500">500 (5 מ׳)</option>
+          <option value="600">600 (6 מ׳)</option>
         </select></label>
         <label class="f">רוחב לוח נטו (ס״מ)<input id="W" type="number" inputmode="decimal" min="5" max="30" step="0.1" value="12"></label>
         <label class="f">עובי לוח (ס״מ)<input id="T" type="number" inputmode="decimal" min="1" max="5" step="0.1" value="2"></label>
         <label class="f">עובי מסור (ס״מ)<input id="K" type="number" inputmode="decimal" min="0" max="1" step="0.05" value="0.3"></label>
         <label class="f">מרווח עמודים מקס׳ (ס״מ)<input id="P" type="number" inputmode="decimal" min="60" max="250" step="5" value="150"></label>
       </div>
+      <p class="muted" style="margin:8px 0 0;font-size:12.5px">הספק לא חותך. לוחות רק ב-4.2, 5 או 6 מ׳, וקורות 5×5 רק ב-3 או 4.2 מ׳. החיתוך לפי התוכנית נעשה במקום.</p>
       <label class="chk"><input type="checkbox" id="spOn"> מרווח (ספייסר) בין הלוחות</label>
       <div class="grid2 spgap" id="gapWrap" hidden>
         <label class="f">רוחב המרווח (ס״מ)<input id="gap" type="number" inputmode="decimal" min="0.1" max="10" step="0.1" value="1"></label>
       </div>
       <div style="margin-top:12px">
         <div class="seg" role="group" aria-label="מטרת האופטימיזציה">
-          <button type="button" id="objBoards" aria-pressed="true">מינימום לוחות</button>
+          <button type="button" id="objBoards" aria-pressed="true">מינימום פחת</button>
           <button type="button" id="objCost" aria-pressed="false">מחיר הכי נמוך</button>
         </div>
-        <button class="btn" id="best">מצא גובה אופטימלי (≥183)</button>
+        <button class="btn" id="best">מצא גובה עם פחת מינימלי (≥183)</button>
         <p class="optres" id="optRes" hidden></p>
       </div>
     </section>
@@ -241,7 +245,7 @@ button,select,input{touch-action:manipulation}
         <label class="f">קורה/עמוד 5×5 (₪ למטר, לכל אורך בלי מחיר)<input id="pFrame" type="number" inputmode="decimal" min="0" step="0.1" placeholder="לא חובה"></label>
         <label class="f">בורג (₪ ליח׳)<input id="pScrew" type="number" inputmode="decimal" min="0" step="0.01" placeholder="לא חובה"></label>
       </div>
-      <p class="muted" style="margin:8px 0 0;font-size:12.5px">במצב ״מחיר הכי נמוך״ האופטימיזציה בודקת את כל הגבהים (183–230) ואת כל אורכי הלוח שיש להם מחיר, ובוחרת את השילוב הזול ביותר. אורך בלי מחיר לא נבדק. עלות הקונסטרוקציה מחושבת לפי הקורות שקונים (כולל פחת), לא לפי מטר נטו. המחירים נשמרים בדפדפן.</p>
+      <p class="muted" style="margin:8px 0 0;font-size:12.5px">במצב ״מחיר הכי נמוך״ האופטימיזציה בודקת את כל הגבהים (183–230) ואת אורכי המלאי שיש להם מחיר (לוחות: 4.2, 5, 6 מ׳ · קורות: 3, 4.2 מ׳), ובוחרת את הזול ביותר. אורך בלי מחיר לא נבדק. עלות הקונסטרוקציה מחושבת לפי הקורות שקונים (כולל פחת), לא לפי מטר נטו. המחירים נשמרים בדפדפן.</p>
     </section>
 
     <section>
@@ -251,6 +255,14 @@ button,select,input{touch-action:manipulation}
         <div class="kpi" id="kWasteBox"><div class="v" id="kWaste">–</div><div class="k">פחת באורך</div></div>
         <div class="kpi"><div class="v" id="kPieces">–</div><div class="k">חתיכות</div></div>
       </div>
+      <div style="overflow-x:auto;margin-top:8px">
+      <table>
+        <thead><tr><th>פריט להזמנה</th><th class="n">אורך מלאי</th><th class="n">כמות</th></tr></thead>
+        <tbody id="orderRows"></tbody>
+      </table>
+      </div>
+      <p class="optres" id="wasteLine"></p>
+      <p class="optres" id="tweak" hidden></p>
       <p class="optres" id="spInfo" hidden></p>
       <div class="summary cost" id="costBox" hidden>
         <div class="kpi"><div class="v" id="kCostBoards">–</div><div class="k">עלות לוחות</div></div>
@@ -272,6 +284,7 @@ button,select,input{touch-action:manipulation}
     <section>
       <h2>תוכנית חיתוך</h2>
       <div id="patterns"></div>
+      <p class="optres" id="cutFoot"></p>
       <div class="legend"><span><i style="background:#D8A86A"></i>דרום / מזרח א׳ / מערב א׳</span><span><i style="background:#E9C694"></i>מזרח ב׳</span><span><i style="background:#C79257"></i>מערב ב׳</span></div>
     </section>
 
@@ -285,7 +298,7 @@ button,select,input{touch-action:manipulation}
       <div id="extras"></div>
       <button class="chip" id="addExtra">+ הוספת חלק</button>
       <h3>חיתוך קורות 5×5</h3>
-      <label class="f" style="margin-bottom:8px">אורך קורה אצל הספק<select id="cstock"><option value="auto" selected>אוטומטי (לפי מטרת האופטימיזציה)</option></select></label>
+      <label class="f" style="margin-bottom:8px">אורך קורה אצל הספק<select id="cstock"><option value="auto" selected>אופטימלי (3 או 4.2 מ׳)</option></select></label>
       <div class="summary">
         <div class="kpi"><div class="v" id="cBuy">–</div><div class="k">קורות לקנייה</div></div>
         <div class="kpi" id="cWasteBox"><div class="v" id="cWaste">–</div><div class="k">פחת באורך</div></div>
@@ -310,6 +323,7 @@ button,select,input{touch-action:manipulation}
     <section>
       <h2>הערות</h2>
       <ul class="notes">
+        <li>הספק לא חותך למידה. מזמינים לוחות שלמים של 4.2, 5 או 6 מ׳ וקורות 5×5 שלמות של 3 או 4.2 מ׳, וחותכים באתר לפי תוכנית החיתוך. השארית בכל מוט מסומנת באפור.</li>
         <li>סדר השכבות מבחוץ פנימה: גדר ברזל ← עמודי אורן 5×5 מוברגים לעמודי הברזל ← קורות אופקיות 5×5 ← לוחות.</li>
         <li>במערב א׳ ובמערב ב׳ גדר הברזל מגיעה כמעט לגובה הגדר, ושם עמודי האורן נתמכים לכל הגובה.</li>
         <li>בדרום ובמזרח א׳ עמודי האורן עולים כ-77 ס״מ מעל הברזל (110). כדאי לחבר כל עמוד בשני ברגים עוברים M8 לפחות, אחד ליד הבסיס ואחד ליד ראש עמוד הברזל.</li>
@@ -336,11 +350,12 @@ const $=id=>document.getElementById(id);
 
 function params(){
   const G=$('spOn').checked?Math.max(0,+$('gap').value||0):0;
-  return {H:+$('H').value||187, stock:+$('stock').value, W:+$('W').value||12, T:+$('T').value||2, K:+$('K').value||0, P:+$('P').value||150, G};
+  const raw=$('stock').value;
+  return {H:+$('H').value||187, stock:raw==='auto'?'auto':(+raw||600), W:+$('W').value||12, T:+$('T').value||2, K:+$('K').value||0, P:+$('P').value||150, G};
 }
 
 function num(id){const v=parseFloat($(id).value);return v>0?v:0}
-function prices(){const board={},cons={};STOCKS.forEach(L=>{board[L]=num('pr'+L);cons[L]=num('cpr'+L)});return {board,cons,ppm:num('ppm'),frame:num('pFrame'),screw:num('pScrew')}}
+function prices(){const board={},cons={};BOARD_STOCKS.forEach(L=>board[L]=num('pr'+L));BEAM_STOCKS.forEach(L=>cons[L]=num('cpr'+L));return {board,cons,ppm:num('ppm'),frame:num('pFrame'),screw:num('pScrew')}}
 
 // ---------- board math
 // G = gap between neighbouring boards (spacer). n boards + (n-1) gaps must cover the segment;
@@ -366,13 +381,36 @@ function pack(pieces,stock,K){
   return bins;
 }
 function compute(pr){
+  const stock=+pr.stock;
   const segs=SEGS.map(s=>{const b=boardsFor(s.len,pr.W,pr.G||0);return {...s,...b,blen:pr.H-s.base}});
   const pieces=[]; segs.forEach(s=>{for(let i=0;i<s.nb;i++)pieces.push({len:s.blen,grp:s.grp})});
-  const bins=pack(pieces,pr.stock,pr.K);
-  if(!bins) return {segs,bins:null};
+  if(!(stock>0)) return {segs,bins:null,stock};
+  const bins=pack(pieces,stock,pr.K);
+  if(!bins) return {segs,bins:null,stock};
   const used=pieces.reduce((a,p)=>a+p.len,0);
-  const waste=bins.length*pr.stock-used;
-  return {segs,bins,pieces:pieces.length,wastePct:100*waste/(bins.length*pr.stock)};
+  const bought=bins.length*stock;
+  const waste=bought-used;
+  const kerf=bins.reduce((a,b)=>a+Math.max(0,b.items.length-1)*pr.K,0);
+  return {segs,bins,pieces:pieces.length,stock,bought,used,waste,kerf,leftover:waste-kerf,wastePct:100*waste/bought};
+}
+// auto = existing objective over the supplier's stock lengths only (one length for the whole order)
+function resolve(pr,pc){
+  if(pr.stock!=='auto') return compute(pr);
+  const priced=BOARD_STOCKS.filter(L=>boardPrice(L,pc)!=null);
+  const list=objective==='cost'&&priced.length?priced:BOARD_STOCKS;
+  let best=null;
+  for(const L of list){
+    const r=compute({...pr,stock:L});
+    if(!r.bins) continue;
+    const n=r.bins.length, bought=r.bought;
+    let cost=null;
+    if(objective==='cost'&&boardPrice(L,pc)!=null) cost=costOf(r,{...pr,stock:L},pc,'cost').total;
+    const better=!best||(cost!=null
+      ?(cost<best.cost-1e-9||(Math.abs(cost-best.cost)<=1e-9&&(bought<best.bought||(bought===best.bought&&n<best.n))))
+      :(bought<best.bought||(bought===best.bought&&n<best.n)));
+    if(better) best={r,n,bought,cost};
+  }
+  return best?best.r:compute({...pr,stock:BOARD_STOCKS[BOARD_STOCKS.length-1]});
 }
 
 // ---------- frame quantities (shared by the panel and the price optimizer)
@@ -432,16 +470,18 @@ function consPlanFor(segs,pr,stock,pc){
 // otherwise fewest bars (tie -> less wood bought)
 function consPlan(segs,pr,pc,objective){
   const sel=$('cstock').value;
-  if(sel!=='auto') return consPlanFor(segs,pr,+sel,pc);
-  const plans=STOCKS.map(L=>consPlanFor(segs,pr,L,pc)).filter(Boolean);
+  if(sel!=='auto'&&BEAM_STOCKS.includes(+sel)) return consPlanFor(segs,pr,+sel,pc);
+  const plans=BEAM_STOCKS.map(L=>consPlanFor(segs,pr,L,pc)).filter(Boolean);
   const priced=plans.filter(p=>p.price!=null);
-  const byCount=(a,b)=>a.n-b.n||a.bought-b.bought;
-  if(objective==='cost'&&priced.length) return priced.sort((a,b)=>a.price-b.price||byCount(a,b))[0];
-  return plans.sort(byCount)[0]||null;
+  const byWaste=(a,b)=>a.bought-b.bought||a.n-b.n;
+  if(objective==='cost'&&priced.length) return priced.sort((a,b)=>a.price-b.price||byWaste(a,b))[0];
+  return plans.sort(byWaste)[0]||null;
 }
 
-// ---------- prices
-const STOCKS=[300,360,366,400,420,450,480,500,540,600];
+// ---------- prices (supplier stock only: boards 4.2/5/6 m, beams 3/4.2 m)
+const BOARD_STOCKS=[420,500,600];
+const BEAM_STOCKS=[300,420];
+const mLabel=cm=>{const m=cm/100;return (Math.abs(m-Math.round(m))<1e-6?String(Math.round(m)):m.toFixed(1))+' מ׳'};
 // price of one board of a given stock length: explicit per-board price wins, else per-metre price, else null (not available)
 function boardPrice(stock,pc){
   const p=pc.board[stock];
@@ -465,19 +505,25 @@ function costOf(res,pr,pc,obj=objective,cp){
 function optimize(pr,pc,objective){
   let best=null;
   if(objective==='cost'){
+    const stocks=BOARD_STOCKS.filter(L=>boardPrice(L,pc)!=null);
+    if(!stocks.length) return null;
     const cpByH={};
-    for(const stock of STOCKS){
-      if(boardPrice(stock,pc)==null) continue;
+    for(const stock of stocks){
       for(let H=183;H<=230;H++){const p={...pr,H,stock},r=compute(p);if(!r.bins)continue;
         if(!(H in cpByH))cpByH[H]=consPlan(r.segs,p,pc,'cost');
         const c=costOf(r,p,pc,'cost',cpByH[H]),n=r.bins.length;
         if(!best||c.total<best.cost-1e-9||(Math.abs(c.total-best.cost)<=1e-9&&(n<best.n||(n===best.n&&H>best.H))))
-          best={H,stock,n,cost:c.total,cstock:c.cp?c.cp.stock:null,cn:c.cp?c.cp.n:0};}
+          best={H,stock,n,cost:c.total,cstock:c.cp?c.cp.stock:null,cn:c.cp?c.cp.n:0,waste:r.waste};}
     }
     return best;
   }
-  for(let H=183;H<=230;H++){const r=compute({...pr,H});if(!r.bins)continue;
-    if(!best||r.bins.length<best.n||(r.bins.length===best.n&&H>best.H))best={H,stock:pr.stock,n:r.bins.length};}
+  const stocks=pr.stock==='auto'?BOARD_STOCKS:[+pr.stock];
+  for(const stock of stocks){
+    for(let H=183;H<=230;H++){const r=compute({...pr,H,stock});if(!r.bins)continue;
+      const n=r.bins.length,bought=r.bought;
+      if(!best||bought<best.bought||(bought===best.bought&&(n<best.n||(n===best.n&&H>best.H))))
+        best={H,stock,n,bought,waste:r.waste};}
+  }
   return best;
 }
 
@@ -487,23 +533,38 @@ function renderPanel(pr,res){
   $('segRows').innerHTML=segs.map(s=>`<tr><td>${s.name}</td><td class="n">${s.len}</td><td class="n">${s.base||'0'}</td><td class="n">${s.blen}</td><td class="n">${s.nb}</td><td class="n">${s.last<pr.W?s.last+' ✂':s.last}</td></tr>`).join('')+
     `<tr><td><b>סה״כ</b></td><td class="n">${segs.reduce((a,s)=>a+s.len,0)}</td><td></td><td></td><td class="n"><b>${segs.reduce((a,s)=>a+s.nb,0)}</b></td><td></td></tr>`;
   renderSpacers(pr,res);
+  const cp=res.cp||consPlan(segs,pr,prices(),objective);
   if(!bins){
     $('kBuy').textContent='—';$('kWaste').textContent='—';$('kPieces').textContent='—';
-    $('patterns').innerHTML=`<p class="muted">הלוח שאצל הספק קצר מגובה הגדר.</p>`;renderFrame(pr,res,consPlan(segs,pr,prices(),objective));renderCost(pr,res);return;
+    $('orderRows').innerHTML='';$('wasteLine').textContent='';$('cutFoot').textContent='';
+    $('patterns').innerHTML=`<p class="muted">הלוח שאצל הספק קצר מגובה הגדר.</p>`;renderFrame(pr,res,cp);renderCost(pr,res);return;
   }
   $('kBuy').textContent=bins.length;
   $('kWaste').textContent=res.wastePct.toFixed(1)+'%';
   $('kWasteBox').className='kpi '+(res.wastePct<3?'good':res.wastePct>10?'bad':'');
   $('kPieces').textContent=res.pieces;
+  renderOrder(pr,res,cp);
   const groups=new Map();
   bins.forEach(b=>{const key=b.items.map(i=>i.grp+i.len).join('|');const g=groups.get(key);g?g.count++:groups.set(key,{count:1,b})});
   $('patterns').innerHTML=[...groups.values()].sort((a,b)=>b.count-a.count).map(({count,b})=>{
     const spans=b.items.map(i=>`<span class="${i.grp}" style="flex:${i.len}">${i.len}</span>`).join('');
-    const rem=b.rem>0.5?`<span class="k" style="flex:${b.rem}">${b.rem.toFixed(1)}</span>`:'';
-    return `<div class="pat"><span class="x">×${count}</span><div class="bar" title="לוח ${pr.stock} ס״מ">${spans}${rem}</div></div>`;
+    const rem=b.rem>0.05?`<span class="k" style="flex:${Math.max(b.rem,0.4)}">${b.rem.toFixed(1)}</span>`:'';
+    return `<div class="pat"><span class="x">×${count}</span><span class="stk">${mLabel(pr.stock)}</span><div class="bar" title="לוח ${pr.stock} ס״מ מהספק, שארית ${b.rem.toFixed(1)} ס״מ בכל לוח">${spans}${rem}</div></div>`;
   }).join('');
-  renderFrame(pr,res,consPlan(segs,pr,prices(),objective));
+  $('cutFoot').innerHTML=`כל שורה היא לוח של <b>${mLabel(pr.stock)}</b> (${pr.stock} ס״מ) מהספק. המספר האפור הוא השארית באותו לוח. פחת כולל <b>${(res.waste/100).toFixed(2)} מ׳</b> (${res.wastePct.toFixed(1)}%) · שאריות ${(res.leftover/100).toFixed(2)} מ׳ · מסור ${(res.kerf/100).toFixed(2)} מ׳`;
+  renderFrame(pr,res,cp);
   renderCost(pr,res);
+}
+function renderOrder(pr,res,cp){
+  const rows=[[`לוחות אורן ${pr.W}×${pr.T} ס״מ`,`${mLabel(pr.stock)} (${pr.stock} ס״מ)`,res.bins.length+' יח׳']];
+  if(cp) rows.push([`קורות 5×5`,`${mLabel(cp.stock)} (${cp.stock} ס״מ)`,cp.n+' יח׳']);
+  const bw=res.waste, cw=cp?cp.bought-cp.net:0;
+  rows.push(['פחת לוחות',(bw/100).toFixed(2)+' מ׳',res.wastePct.toFixed(1)+'%']);
+  if(cp) rows.push(['פחת קורות',(cw/100).toFixed(2)+' מ׳',cp.wastePct.toFixed(1)+'%']);
+  rows.push(['פחת כולל',((bw+cw)/100).toFixed(2)+' מ׳','']);
+  $('orderRows').innerHTML=rows.map((r,i)=>{const last=i===rows.length-1;return `<tr><td>${last?'<b>'+r[0]+'</b>':r[0]}</td><td class="n">${r[1]}</td><td class="n">${last?'<b>'+r[2]+'</b>':r[2]}</td></tr>`}).join('');
+  const auto=$('stock').value==='auto', cauto=$('cstock').value==='auto';
+  $('wasteLine').innerHTML=`${auto?`לוחות: נבחר <b>${mLabel(pr.stock)}</b> (${objective==='cost'?'הזול ביותר':'הכי מעט פחת'} מבין 4.2 / 5 / 6 מ׳). `:''}${cauto&&cp?`קורות: נבחר <b>${mLabel(cp.stock)}</b> (${objective==='cost'?'הזול ביותר':'הכי מעט פחת'} מבין 3 / 4.2 מ׳). `:''}סה״כ פחת <b>${((bw+cw)/100).toFixed(2)} מ׳</b>`;
 }
 function renderSpacers(pr,res){
   const el=$('spInfo');if(!(pr.G>0)){el.hidden=true;return}
@@ -530,14 +591,16 @@ function renderFrame(pr,res,cp){
   $('cWasteBox').className='kpi '+(cp.wastePct<3?'good':cp.wastePct>10?'bad':'');
   $('cNet').textContent=(cp.net/100).toFixed(1);
   const auto=$('cstock').value==='auto';
-  $('cInfo').innerHTML=`${auto?'נבחר: ':''}<b>${cp.n}</b> קורות באורך <b>${cp.stock}</b> · <b>${cp.pieces.length}</b> חתיכות`+
+  const kerf=cp.bins.reduce((a,b)=>a+Math.max(0,b.items.length-1)*pr.K,0);
+  const left=cp.bought-cp.net-kerf;
+  $('cInfo').innerHTML=`${auto?'נבחר: ':''}<b>${cp.n}</b> קורות <b>${mLabel(cp.stock)}</b> (${cp.stock} ס״מ) · <b>${cp.pieces.length}</b> חתיכות · פחת <b>${((cp.bought-cp.net)/100).toFixed(2)} מ׳</b> · שאריות ${(left/100).toFixed(2)} מ׳ · מסור ${(kerf/100).toFixed(2)} מ׳`+
     (cp.price!=null?` · <b>${ils(cp.price)}</b>`:'');
   const groups=new Map();
   cp.bins.forEach(b=>{const key=b.items.map(i=>i.kind+i.len+(i.split?'s':'')).join('|');const g=groups.get(key);g?g.count++:groups.set(key,{count:1,b})});
   $('cPatterns').innerHTML=[...groups.values()].sort((a,b)=>b.count-a.count).map(({count,b})=>{
     const spans=b.items.map(i=>`<span class="${i.kind}" style="flex:${i.len}" title="${i.label} · ${i.len}">${i.len}${i.split?'<i class="sp">⇹</i>':''}</span>`).join('');
-    const rem=b.rem>0.5?`<span class="k" style="flex:${b.rem}">${b.rem.toFixed(1)}</span>`:'';
-    return `<div class="pat"><span class="x">×${count}</span><div class="bar" title="קורה ${cp.stock} ס״מ">${spans}${rem}</div></div>`;
+    const rem=b.rem>0.05?`<span class="k" style="flex:${Math.max(b.rem,0.4)}">${b.rem.toFixed(1)}</span>`:'';
+    return `<div class="pat"><span class="x">×${count}</span><span class="stk">${mLabel(cp.stock)}</span><div class="bar" title="קורה ${cp.stock} ס״מ מהספק, שארית ${b.rem.toFixed(1)} ס״מ">${spans}${rem}</div></div>`;
   }).join('');
 }
 const ils=v=>'₪'+Math.round(v).toLocaleString('he-IL');
@@ -714,23 +777,58 @@ syncBg();
 function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(host);
 
-function update(){const pr=params();const res=compute(pr);renderPanel(pr,res);buildScene(pr,res)}
+function update(){
+  const pr0=params(), pc=prices();
+  const res=resolve(pr0,pc);
+  const pr={...pr0,stock:res.stock};
+  res.cp=consPlan(res.segs,pr,pc,objective);
+  renderPanel(pr,res);buildScene(pr,res);renderTweak(pr0,pc,res);
+}
+function renderTweak(pr0,pc,cur){
+  const el=$('tweak');
+  if(!cur.bins){el.hidden=true;return}
+  const base=cur.waste+(cur.cp?cur.cp.bought-cur.cp.net:0);
+  const H0=+pr0.H; let bestH=null;
+  for(let H=Math.max(183,H0-3);H<=Math.min(230,H0+12);H++){
+    if(H===H0) continue;
+    const r=resolve({...pr0,H},pc); if(!r.bins) continue;
+    const cp=consPlan(r.segs,{...pr0,H,stock:r.stock},pc,objective);
+    const w=r.waste+(cp?cp.bought-cp.net:0), save=base-w;
+    if(save>=100&&(!bestH||save>bestH.save)) bestH={H,save,r,cp};
+  }
+  const P0=+pr0.P; let bestP=null;
+  for(let P=Math.max(60,P0-30);P<=Math.min(250,P0+30);P+=5){
+    if(P===P0) continue;
+    const pr={...pr0,P,stock:cur.stock}, r=compute(pr); if(!r.bins) continue;
+    const cp=consPlan(r.segs,pr,pc,objective); if(!cp||!cur.cp) continue;
+    const save=(cur.cp.bought-cur.cp.net)-(cp.bought-cp.net);
+    if(save>=100&&(!bestP||save>bestP.save)) bestP={P,save,cp};
+  }
+  const bits=[];
+  if(bestH) bits.push(`אפשרות, בלי לשנות את רוחב הקטעים: גובה <b>${bestH.H}</b> ס״מ במקום ${H0} מפחית את הפחת בכ-<b>${(bestH.save/100).toFixed(2)} מ׳</b> (לוחות ${bestH.r.bins.length} × ${mLabel(bestH.r.stock)}${bestH.cp?' · קורות '+bestH.cp.n+' × '+mLabel(bestH.cp.stock):''}). <button type="button" class="chip" id="applyH">החל גובה ${bestH.H}</button>`);
+  if(bestP) bits.push(`אפשרות: מרווח עמודים מקסימלי <b>${bestP.P}</b> ס״מ במקום ${P0} מפחית את פחת הקורות בכ-<b>${(bestP.save/100).toFixed(2)} מ׳</b> (קורה ${mLabel(bestP.cp.stock)} × ${bestP.cp.n}). <button type="button" class="chip" id="applyP">החל מרווח ${bestP.P}</button>`);
+  if(!bits.length){el.hidden=true;el.innerHTML='';return}
+  el.hidden=false; el.innerHTML=bits.join('<br>');
+  if($('applyH')) $('applyH').onclick=()=>{$('H').value=bestH.H;$('optRes').hidden=true;update()};
+  if($('applyP')) $('applyP').onclick=()=>{$('P').value=bestP.P;ov.post={};$('optRes').hidden=true;update()};
+}
 ['H','stock','W','T','K','P','gap'].forEach(id=>$(id).addEventListener('input',update));
 $('spOn').addEventListener('change',()=>{$('gapWrap').hidden=!$('spOn').checked;update()});
 $('P').addEventListener('input',()=>{ov.post={};update()});
 $('resetFrame').addEventListener('click',()=>{ov.post={};ov.rail={};update()});
 // price inputs (one per stock length), saved in this browser
-$('priceGrid').innerHTML=STOCKS.map(L=>`<label id="lb${L}">${L}<input id="pr${L}" type="number" inputmode="decimal" min="0" step="0.1" aria-label="מחיר ללוח ${L} ס״מ"></label>`).join('');
-$('cPriceGrid').innerHTML=STOCKS.map(L=>`<label id="clb${L}">${L}<input id="cpr${L}" type="number" inputmode="decimal" min="0" step="0.1" aria-label="מחיר לקורה 5×5 ${L} ס״מ"></label>`).join('');
-$('cstock').insertAdjacentHTML('beforeend',STOCKS.map(L=>`<option value="${L}">${L}</option>`).join(''));
+$('priceGrid').innerHTML=BOARD_STOCKS.map(L=>`<label id="lb${L}">${mLabel(L)}<input id="pr${L}" type="number" inputmode="decimal" min="0" step="0.1" aria-label="מחיר ללוח ${mLabel(L)}"></label>`).join('');
+$('cPriceGrid').innerHTML=BEAM_STOCKS.map(L=>`<label id="clb${L}">${mLabel(L)}<input id="cpr${L}" type="number" inputmode="decimal" min="0" step="0.1" aria-label="מחיר לקורה 5×5 ${mLabel(L)}"></label>`).join('');
+$('cstock').insertAdjacentHTML('beforeend',BEAM_STOCKS.map(L=>`<option value="${L}">${L} (${mLabel(L)})</option>`).join(''));
 const PKEY='pineFencePrices.v1';
-const PRICE_IDS=[...STOCKS.map(L=>'pr'+L),...STOCKS.map(L=>'cpr'+L),'ppm','pFrame','pScrew','cstock'];
+const PRICE_IDS=[...BOARD_STOCKS.map(L=>'pr'+L),...BEAM_STOCKS.map(L=>'cpr'+L),'ppm','pFrame','pScrew','cstock'];
 let objective='boards';
-try{const sv=JSON.parse(localStorage.getItem(PKEY)||'{}');PRICE_IDS.forEach(id=>{if(sv[id]!=null)$(id).value=sv[id]});if(sv.objective==='cost')objective='cost'}catch(e){}
+try{const sv=JSON.parse(localStorage.getItem(PKEY)||'{}');PRICE_IDS.forEach(id=>{if(sv[id]!=null&&$(id))$(id).value=sv[id]});if(sv.objective==='cost')objective='cost';if(!['auto','300','420'].includes($('cstock').value))$('cstock').value='auto'}catch(e){}
 function savePrices(){try{const o={objective};PRICE_IDS.forEach(id=>{if($(id).value!=='')o[id]=$(id).value});localStorage.setItem(PKEY,JSON.stringify(o))}catch(e){}}
-function markPriced(){const pc=prices();STOCKS.forEach(L=>$('lb'+L).classList.toggle('on',boardPrice(L,pc)!=null&&L===+$('stock').value));
-  const cp=consPlan(compute(params()).segs,params(),pc,objective);
-  STOCKS.forEach(L=>$('clb'+L).classList.toggle('on',!!cp&&cp.stock===L&&consPrice(L,pc)!=null))}
+function markPriced(){const pc=prices(),pr0=params(),res=resolve(pr0,pc),pr={...pr0,stock:res.stock};
+  BOARD_STOCKS.forEach(L=>$('lb'+L).classList.toggle('on',!!res.bins&&res.stock===L&&boardPrice(L,pc)!=null));
+  const cp=res.bins?consPlan(res.segs,pr,pc,objective):null;
+  BEAM_STOCKS.forEach(L=>$('clb'+L).classList.toggle('on',!!cp&&cp.stock===L&&consPrice(L,pc)!=null))}
 PRICE_IDS.forEach(id=>$(id).addEventListener('input',()=>{savePrices();markPriced();update()}));
 $('stock').addEventListener('input',markPriced);
 // extra construction pieces (saved in this browser)
@@ -752,7 +850,7 @@ $('addExtra').addEventListener('click',()=>{extras.push({name:'',len:100,qty:1})
   const ins=$('extras').querySelectorAll('.xrow:last-child input');ins[0]&&ins[0].focus()});
 renderExtras();
 function setObjective(o){objective=o;$('objBoards').setAttribute('aria-pressed',o==='boards');$('objCost').setAttribute('aria-pressed',o==='cost');
-  $('best').textContent=o==='cost'?'מצא שילוב זול ביותר (גובה ≥183 + אורך לוח)':'מצא גובה אופטימלי (≥183)';$('optRes').hidden=true;savePrices();
+  $('best').textContent=o==='cost'?'מצא שילוב זול ביותר (גובה ≥183 + אורך לוח)':'מצא גובה עם פחת מינימלי (≥183)';$('optRes').hidden=true;savePrices();
   if(typeof update==='function'&&$('cstock').value==='auto'&&booted)update()}
 let booted=false;
 $('objBoards').addEventListener('click',()=>setObjective('boards'));
@@ -762,17 +860,16 @@ $('best').addEventListener('click',()=>{
   const pr=params(),pc=prices(),out=$('optRes');
   const best=optimize(pr,pc,objective);
   if(!best){out.hidden=false;out.textContent=objective==='cost'?'הזינו מחיר לפחות לאורך לוח אחד (או מחיר למטר רץ).':'לא נמצא פתרון – הלוח קצר מגובה הגדר.';return}
-  $('H').value=best.H;$('stock').value=best.stock;markPriced();update();
+  $('H').value=best.H;if($('stock').value!=='auto')$('stock').value=String(best.stock);markPriced();update();
   out.hidden=false;
   if(objective==='cost'){
-    // compare with the fewest-boards answer for the length that was selected before
     const ref=optimize(pr,pc,'boards');let cmp='';
-    if(ref&&boardPrice(ref.stock,pc)!=null){const rp={...pr,H:ref.H},rc=costOf(compute(rp),rp,pc).total,d=rc-best.cost;
-      if(d>0.5)cmp=` · חיסכון של <b>${ils(d)}</b> לעומת מינימום לוחות באורך ${ref.stock}`;}
-    const cs=best.cstock?` · <b>${best.cn}</b> קורות 5×5 באורך <b>${best.cstock}</b>`:'';
-    out.innerHTML=`נבחר: לוח <b>${best.stock}</b> · גובה <b>${best.H}</b> · <b>${best.n}</b> לוחות${cs} · סה״כ <b>${ils(best.cost)}</b>${cmp}`;
+    if(ref&&boardPrice(ref.stock,pc)!=null){const rp={...pr,H:ref.H,stock:ref.stock},rc=costOf(compute(rp),rp,pc).total,d=rc-best.cost;
+      if(d>0.5)cmp=` · חיסכון של <b>${ils(d)}</b> לעומת מינימום פחת באורך ${mLabel(ref.stock)}`;}
+    const cs=best.cstock?` · <b>${best.cn}</b> קורות 5×5 ${mLabel(best.cstock)}`:'';
+    out.innerHTML=`נבחר: לוח <b>${mLabel(best.stock)}</b> · גובה <b>${best.H}</b> · <b>${best.n}</b> לוחות${cs} · סה״כ <b>${ils(best.cost)}</b>${cmp}`;
   }else{
-    out.innerHTML=`נבחר: גובה <b>${best.H}</b> · <b>${best.n}</b> לוחות באורך <b>${best.stock}</b>`;
+    out.innerHTML=`נבחר: גובה <b>${best.H}</b> · <b>${best.n}</b> לוחות של <b>${mLabel(best.stock)}</b>`;
   }
 });
 
@@ -794,8 +891,9 @@ function plankLayout(s,pr){
   out.sort((a,b)=>a.left-b.left);out.forEach((p,k)=>p.pos=k+1);return out;
 }
 function planData(scope){
-  const pr=params(),res=compute(pr),pc=prices();
-  if(!res.bins) throw new Error('הלוח שאצל הספק קצר מגובה הגדר.');
+  const pr0=params(),pc=prices(),base=resolve(pr0,pc);
+  if(!base.bins) throw new Error('הלוח שאצל הספק קצר מגובה הגדר.');
+  const pr={...pr0,stock:base.stock},res=compute(pr);
   const segs=res.segs.map(s=>{const rev=segRev(s);return {...s,rev,planks:plankLayout(s,pr),
     rails:[...railsOf(s,pr)].sort((a,b)=>a-b),posts:postsOf(s,pr).map(x=>+(rev?s.len-x:x).toFixed(1)).sort((a,b)=>a-b),
     leftEnd:endName(s,rev),rightEnd:endName(s,!rev)}});
@@ -841,17 +939,17 @@ function reportBlocks(d,shots){
   B.push(`<div><h1>תוכנית בנייה · גדר האורן</h1><p class="rp-sub">${all?'לוחות + קונסטרוקציה':'לוחות בלבד'} · הופק ב-${date}</p></div>`);
   B.push(`<h2 class="rp-keep">סיכום ומידות</h2>`);
   const kv=[['גובה גדר',pr.H+' ס״מ'],['אורך כולל',f1(total)+' ס״מ'],['קטעים',segs.length],['רוחב לוח',f1(pr.W)+' ס״מ'],['עובי לוח',f1(pr.T)+' ס״מ'],
-    ['אורך לוח אצל הספק',pr.stock+' ס״מ'],['מרווח בין לוחות',pr.G>0?f1(pr.G)+' ס״מ (ספייסרים)':'בלי מרווח (צמודים)'],['עובי מסור',f1(pr.K)+' ס״מ'],
-    ['מרווח עמודים מקס׳',pr.P+' ס״מ'],['מטרת אופטימיזציה',objective==='cost'?'מחיר הכי נמוך':'מינימום לוחות'],['לוחות בגדר',nPl],['פחת לוחות',res.wastePct.toFixed(1)+'%']];
-  if(all)kv.push(['אורך קורה 5×5',cp.stock+' ס״מ'],['פחת קונסטרוקציה',cp.wastePct.toFixed(1)+'%'],['5×5 נטו',f1(cp.net/100)+' מ׳']);
+    ['אורך לוח אצל הספק',mLabel(pr.stock)+' ('+pr.stock+' ס״מ)'],['מרווח בין לוחות',pr.G>0?f1(pr.G)+' ס״מ (ספייסרים)':'בלי מרווח (צמודים)'],['עובי מסור',f1(pr.K)+' ס״מ'],
+    ['מרווח עמודים מקס׳',pr.P+' ס״מ'],['מטרת אופטימיזציה',objective==='cost'?'מחיר הכי נמוך':'מינימום פחת'],['לוחות בגדר',nPl],['פחת לוחות',res.wastePct.toFixed(1)+'% · '+(res.waste/100).toFixed(2)+' מ׳']];
+  if(all)kv.push(['אורך קורה 5×5',mLabel(cp.stock)+' ('+cp.stock+' ס״מ)'],['פחת קונסטרוקציה',cp.wastePct.toFixed(1)+'% · '+((cp.bought-cp.net)/100).toFixed(2)+' מ׳'],['5×5 נטו',f1(cp.net/100)+' מ׳']);
   B.push(`<div class="rp-kv">${kv.map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>`);
   B.push(`<h2 class="rp-keep">מידות לפי קטע</h2>`);
   B.push(`<table><thead><tr><th>קטע</th><th>קוד</th><th class="n">רוחב</th><th class="n">בסיס</th><th class="n">אורך לוח</th><th class="n">לוחות</th><th class="n">לוח אחרון (רוחב)</th>${all?'<th class="n">עמודים</th><th class="n">קורות</th>':''}</tr></thead><tbody>${
     segs.map(s=>`<tr><td>${s.name}</td><td>${CODE[s.id]}</td><td class="n">${s.len}</td><td class="n">${s.base}</td><td class="n">${s.blen}</td><td class="n">${s.nb}</td><td class="n">${f1(s.last)}${s.last<pr.W?' ✂':''}</td>${all?`<td class="n">${s.posts.length}</td><td class="n">${s.rails.length}</td>`:''}</tr>`).join('')
     }<tr class="tot"><td>סה״כ</td><td></td><td class="n">${total}</td><td></td><td></td><td class="n">${nPl}</td><td></td>${all?`<td class="n">${fq.posts}</td><td></td>`:''}</tr></tbody></table>`);
   // ---- shopping list
-  const buy=[[`לוחות אורן באורך ${pr.stock} ס״מ, רוחב ${f1(pr.W)}, עובי ${f1(pr.T)}`,bins.length+' יח׳',`${res.pieces} חתיכות`]];
-  if(all)buy.push([`קורות אורן 5×5 באורך ${cp.stock} ס״מ`,cp.n+' יח׳',`${cp.pieces.length} חתיכות · ${f1(cp.net/100)} מ׳ נטו`]);
+  const buy=[[`לוחות אורן ${mLabel(pr.stock)} (${pr.stock} ס״מ), רוחב ${f1(pr.W)}, עובי ${f1(pr.T)} — בלי חיתוך אצל הספק`,bins.length+' יח׳',`${res.pieces} חתיכות אחרי חיתוך במקום`]];
+  if(all)buy.push([`קורות אורן 5×5 ${mLabel(cp.stock)} (${cp.stock} ס״מ) — בלי חיתוך אצל הספק`,cp.n+' יח׳',`${cp.pieces.length} חתיכות · ${f1(cp.net/100)} מ׳ נטו`]);
   if(pr.G>0)buy.push([`ספייסרים ${f1(pr.G)} ס״מ`,d.spacers+' יח׳',`${d.gaps} מרווחים × מספר הקורות (אפשר פחות אם משתמשים שוב)`]);
   buy.push(['ברגי נירוסטה ללוחות',fq.screws+' יח׳','2 לכל לוח בכל קורה']);
   if(all)buy.push(['ברגים עוברים M8',fq.bolts+' יח׳','2 לכל עמוד אורן']);
@@ -873,14 +971,17 @@ function reportBlocks(d,shots){
   shots.forEach(s=>B.push(`<div><img class="shot" src="${s.src}" width="714" height="428"><p class="rp-cap">${s.cap}</p></div>`));
   // ---- plank cut plan (continues under the images when there is room)
   B.push(`<h2 class="rp-keep">תוכנית חיתוך · לוחות</h2>`);
-  B.push(`<p class="rp-note rp-keep">כל שורה היא לוח אחד של ${pr.stock} ס״מ מהספק (מספר הלוח משמאל). כל חתיכה מסומנת <b>קוד קטע-מיקום</b>: ${segs.map(s=>`${CODE[s.id]} = ${s.name}`).join(' · ')}. המיקום נספר משמאל לימין במבט מבפנים, כמו במפת ההצבה. מתחת למזהה: אורך החתיכה (ס״מ). אפור: שארית.</p>`);
+  B.push(`<p class="rp-note rp-keep">כל שורה היא לוח אחד של ${mLabel(pr.stock)} (${pr.stock} ס״מ) מהספק, בלי חיתוך אצלו (מספר הלוח משמאל). כל חתיכה מסומנת <b>קוד קטע-מיקום</b>: ${segs.map(s=>`${CODE[s.id]} = ${s.name}`).join(' · ')}. המיקום נספר משמאל לימין במבט מבפנים, כמו במפת ההצבה. מתחת למזהה: אורך החתיכה (ס״מ). אפור: שארית.</p>`);
   bins.forEach((b,i)=>B.push(`<div class="rp-row"><span class="x">#${i+1}</span>${barHtml(b.items,b.rem,it=>it.grp,it=>it.id+(it.w<pr.W?' ✂':''))}</div>`));
+  B.push(`<p class="rp-note">פחת לוחות: <b>${(res.waste/100).toFixed(2)} מ׳</b> (${res.wastePct.toFixed(1)}%) · שאריות ${(res.leftover/100).toFixed(2)} מ׳ · מסור ${(res.kerf/100).toFixed(2)} מ׳.</p>`);
   // ---- construction cut plan
   if(all){
     B.push('<pagebreak>');
     B.push(`<h2 class="rp-keep">תוכנית חיתוך · קונסטרוקציה 5×5</h2>`);
-    B.push(`<p class="rp-note rp-keep">כל שורה היא קורה אחת של ${cp.stock} ס״מ. <b>ע</b> = עמוד (ע ד-1 = עמוד 1 בדרום, משמאל). <b>ק</b> = קורה אופקית (ת = תחתונה, א = אמצעית, ע = עליונה; מספר בסוף = חלק משמאל אם הקורה מחולקת). <b>ת</b> = תוספת${xs.length?' ('+xs.map((x,i)=>`ת${i+1} = ${esc(x.name||'תוספת')}`).join(', ')+')':''}. ⇹ = חתיכה שמתחברת לחתיכה נוספת.</p>`);
+    B.push(`<p class="rp-note rp-keep">כל שורה היא קורה אחת של ${mLabel(cp.stock)} (${cp.stock} ס״מ) מהספק, בלי חיתוך אצלו. <b>ע</b> = עמוד (ע ד-1 = עמוד 1 בדרום, משמאל). <b>ק</b> = קורה אופקית (ת = תחתונה, א = אמצעית, ע = עליונה; מספר בסוף = חלק משמאל אם הקורה מחולקת). <b>ת</b> = תוספת${xs.length?' ('+xs.map((x,i)=>`ת${i+1} = ${esc(x.name||'תוספת')}`).join(', ')+')':''}. ⇹ = חתיכה שמתחברת לחתיכה נוספת.</p>`);
     cp.bins.forEach((b,i)=>B.push(`<div class="rp-row"><span class="x">#${i+1}</span>${barHtml(b.items,b.rem,it=>it.kind,it=>it.id+(it.split?' ⇹':''))}</div>`));
+    {const bKerf=cp.bins.reduce((a,b)=>a+Math.max(0,b.items.length-1)*pr.K,0),bLeft=cp.bought-cp.net-bKerf;
+      B.push(`<p class="rp-note">פחת קורות: <b>${((cp.bought-cp.net)/100).toFixed(2)} מ׳</b> (${cp.wastePct.toFixed(1)}%) · שאריות ${(bLeft/100).toFixed(2)} מ׳ · מסור ${(bKerf/100).toFixed(2)} מ׳.</p>`);}
   }
   // ---- steps
   B.push('<pagebreak>');
