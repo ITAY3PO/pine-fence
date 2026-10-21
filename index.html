@@ -332,6 +332,7 @@ button,select,input{touch-action:manipulation}
         <li>במזרח ב׳ גדר הברזל בולטת רק 40 ס״מ מעל הקיר, ועמודי האורן עולים מעליה כ-65 ס״מ. שם כדאי לעגן את העמודים גם לקיר עצמו, עם זוויתן ודיבל פלדה.</li>
         <li>קורה אופקית ארוכה מהקורה שאצל הספק מחולקת לחתיכות, והחיבורים נופלים על עמודי אורן (מסומן ⇹ בתוכנית החיתוך). תוספת ארוכה מהקורה מחולקת לחלקים שווים.</li>
         <li>מידות גדר הברזל ומיקום העמודים בהדמיה משוערים.</li>
+        <li>בפינות, לוחות הדרום נעצרים בפן הפנימי של לוחות המערב והמזרח (אחרי העמוד, הקורה ועובי הלוח), בלי חפיפה.</li>
       </ul>
     </section>
   </aside>
@@ -369,6 +370,18 @@ function boardsFor(len,W,G=0){
   if(n>1&&last<1){n--;last=+Math.min(W,len-(n-1)*(W+G)).toFixed(1)}
   return {nb:n,last,gaps:n-1};
 }
+// Butt joint at the two corners. The east and west boards run through; the south boards
+// stop on their inner face (post + rail + board thickness in from the iron line) so the
+// two runs don't occupy the same space. A run is trimmed only when both ends meet a
+// perpendicular run — the returns keep their full length.
+function boardRun(s,T){
+  const face=IRON/2+POST+RAIL_D+T;
+  const pt=(seg,atEnd)=>atEnd?[seg.o[0]+seg.d[0]*seg.len,seg.o[1]+seg.d[1]*seg.len]:seg.o;
+  const corner=atEnd=>SEGS.some(t=>t!==s&&t.d[0]*s.d[0]+t.d[1]*s.d[1]===0&&[false,true].some(e=>{
+    const p=pt(t,e),q=pt(s,atEnd);return Math.abs(p[0]-q[0])<1&&Math.abs(p[1]-q[1])<1}));
+  const cut=corner(false)&&corner(true)?face:0;
+  return {from:cut,span:s.len-2*cut};
+}
 function pack(pieces,stock,K){
   const ps=[...pieces].sort((a,b)=>b.len-a.len), bins=[];
   for(const p of ps){
@@ -384,7 +397,7 @@ function pack(pieces,stock,K){
 }
 function compute(pr){
   const stock=+pr.stock;
-  const segs=SEGS.map(s=>{const b=boardsFor(s.len,pr.W,pr.G||0);return {...s,...b,blen:pr.H-s.base}});
+  const segs=SEGS.map(s=>{const run=boardRun(s,pr.T),b=boardsFor(run.span,pr.W,pr.G||0);return {...s,...b,blen:pr.H-s.base,boardFrom:run.from}});
   const pieces=[]; segs.forEach(s=>{for(let i=0;i<s.nb;i++)pieces.push({len:s.blen,grp:s.grp})});
   if(!(stock>0)) return {segs,bins:null,stock};
   const bins=pack(pieces,stock,pr.K);
@@ -743,9 +756,10 @@ function buildScene(pr,res){
     // pine posts + rails
     postsOf(s,pr).forEach((x,i)=>{const m=boxOn(s,x-POST/2,x+POST/2,tF,tR,s.base,pr.H-3,mats.frame,G.frame);if(m)m.userData={kind:'post',seg:s.id,i}});
     railsOf(s,pr).forEach((y,i)=>{const m=boxOn(s,0,s.len,tR,tB,y,y+RAIL_H,mats.frame,G.frame);if(m)m.userData={kind:'rail',seg:s.id,i}});
-    // boards
+    // boards (south run is inset at the corners — see boardRun)
+    const from=s.boardFrom||0;
     for(let i=0;i<s.nb;i++){
-      const w=i<s.nb-1?pr.W:s.last, s0=i*(pr.W+(pr.G||0));
+      const w=i<s.nb-1?pr.W:s.last, s0=from+i*(pr.W+(pr.G||0));
       boxOn(s,s0+0.08,s0+w-0.08,tB,tB+T,s.base,pr.H,boardMats[(i*5+s.id.length)%8],G.boards);
     }
     // label
@@ -888,8 +902,8 @@ function endName(s,atEnd){const pt=segEnd(s,atEnd);
   return nb?'מפגש עם '+nb.name:'קצה הגדר'}
 // planks of a segment ordered left -> right as seen from inside the yard
 function plankLayout(s,pr){
-  const rev=segRev(s),G=pr.G||0,out=[];
-  for(let i=0;i<s.nb;i++){const w=i<s.nb-1?pr.W:s.last,s0=i*(pr.W+G);out.push({i,w,left:+(rev?s.len-(s0+w):s0).toFixed(1)})}
+  const rev=segRev(s),G=pr.G||0,from=s.boardFrom||0,out=[];
+  for(let i=0;i<s.nb;i++){const w=i<s.nb-1?pr.W:s.last,s0=from+i*(pr.W+G);out.push({i,w,left:+(rev?s.len-(s0+w):s0).toFixed(1)})}
   out.sort((a,b)=>a.left-b.left);out.forEach((p,k)=>p.pos=k+1);return out;
 }
 function planData(scope){
