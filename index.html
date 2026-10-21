@@ -275,7 +275,7 @@ button,select,input{touch-action:manipulation}
       <h2>לפי קטע</h2>
       <div style="overflow-x:auto">
       <table>
-        <thead><tr><th>קטע</th><th class="n">רוחב</th><th class="n">בסיס</th><th class="n">אורך לוח</th><th class="n">לוחות</th><th class="n">לוח אחרון</th></tr></thead>
+        <thead><tr><th>קטע</th><th class="n">כיסוי</th><th class="n">בסיס</th><th class="n">אורך לוח</th><th class="n">לוחות</th><th class="n">לוח אחרון</th></tr></thead>
         <tbody id="segRows"></tbody>
       </table>
       </div>
@@ -332,7 +332,7 @@ button,select,input{touch-action:manipulation}
         <li>במזרח ב׳ גדר הברזל בולטת רק 40 ס״מ מעל הקיר, ועמודי האורן עולים מעליה כ-65 ס״מ. שם כדאי לעגן את העמודים גם לקיר עצמו, עם זוויתן ודיבל פלדה.</li>
         <li>קורה אופקית ארוכה מהקורה שאצל הספק מחולקת לחתיכות, והחיבורים נופלים על עמודי אורן (מסומן ⇹ בתוכנית החיתוך). תוספת ארוכה מהקורה מחולקת לחלקים שווים.</li>
         <li>מידות גדר הברזל ומיקום העמודים בהדמיה משוערים.</li>
-        <li>בפינות, לוחות הדרום נעצרים בפן הפנימי של לוחות המערב והמזרח (אחרי העמוד, הקורה ועובי הלוח), בלי חפיפה.</li>
+        <li>בפינות, לוחות הדרום נעצרים בפן הפנימי של לוחות המערב והמזרח, ולוחות המערב והמזרח נעצרים בפן החיצוני של לוחות הדרום — בלי חפיפה ובלי בליטה.</li>
       </ul>
     </section>
   </aside>
@@ -367,21 +367,24 @@ function prices(){const board={},cons={};BOARD_STOCKS.forEach(L=>board[L]=num('p
 function boardsFor(len,W,G=0){
   let n=Math.max(1,Math.ceil((len+G)/(W+G)-0.02));
   let last=+(len-(n-1)*(W+G)).toFixed(1);
+  if(last>W){n++;last=+(len-(n-1)*(W+G)).toFixed(1)}
   if(n>1&&last<1){n--;last=+Math.min(W,len-(n-1)*(W+G)).toFixed(1)}
   return {nb:n,last,gaps:n-1};
 }
-// Butt joint at the two corners. The east and west boards run through; the south boards
-// stop on their inner face (post + rail + board thickness in from the iron line) so the
-// two runs don't occupy the same space. A run is trimmed only when both ends meet a
-// perpendicular run — the returns keep their full length.
+// Corner butt. South (perpendicular fences at both ends) stops on the inner face of the
+// east/west boards. Those returns stop on the south boards' outer face, so nothing
+// projects past the corner. The two faces meet; there is no overlap and no gap.
 function boardRun(s,T){
-  const face=IRON/2+POST+RAIL_D+T;
+  const outer=IRON/2+POST+RAIL_D, inner=outer+T;
   const pt=(seg,atEnd)=>atEnd?[seg.o[0]+seg.d[0]*seg.len,seg.o[1]+seg.d[1]*seg.len]:seg.o;
   const corner=atEnd=>SEGS.some(t=>t!==s&&t.d[0]*s.d[0]+t.d[1]*s.d[1]===0&&[false,true].some(e=>{
     const p=pt(t,e),q=pt(s,atEnd);return Math.abs(p[0]-q[0])<1&&Math.abs(p[1]-q[1])<1}));
-  const cut=corner(false)&&corner(true)?face:0;
-  return {from:cut,span:s.len-2*cut};
+  const both=corner(false)&&corner(true);
+  const cut=atEnd=>corner(atEnd)?(both?inner:outer):0;
+  const a=cut(false),b=cut(true);
+  return {from:a,span:s.len-a-b};
 }
+function coverOf(s,pr){return +((s.nb-1)*(pr.W+(pr.G||0))+s.last).toFixed(1)}
 function pack(pieces,stock,K){
   const ps=[...pieces].sort((a,b)=>b.len-a.len), bins=[];
   for(const p of ps){
@@ -545,8 +548,8 @@ function optimize(pr,pc,objective){
 // ---------- UI rendering
 function renderPanel(pr,res){
   const {segs,bins}=res;
-  $('segRows').innerHTML=segs.map(s=>`<tr><td>${s.name}</td><td class="n">${s.len}</td><td class="n">${s.base||'0'}</td><td class="n">${s.blen}</td><td class="n">${s.nb}</td><td class="n">${s.last<pr.W?s.last+' ✂':s.last}</td></tr>`).join('')+
-    `<tr><td><b>סה״כ</b></td><td class="n">${segs.reduce((a,s)=>a+s.len,0)}</td><td></td><td></td><td class="n"><b>${segs.reduce((a,s)=>a+s.nb,0)}</b></td><td></td></tr>`;
+  $('segRows').innerHTML=segs.map(s=>`<tr><td>${s.name}</td><td class="n">${coverOf(s,pr)}</td><td class="n">${s.base||'0'}</td><td class="n">${s.blen}</td><td class="n">${s.nb}</td><td class="n">${s.last<pr.W?s.last+' ✂':s.last}</td></tr>`).join('')+
+    `<tr><td><b>סה״כ</b></td><td class="n">${+segs.reduce((a,s)=>a+coverOf(s,pr),0).toFixed(1)}</td><td></td><td></td><td class="n"><b>${segs.reduce((a,s)=>a+s.nb,0)}</b></td><td></td></tr>`;
   renderSpacers(pr,res);
   const cp=res.cp||consPlan(segs,pr,prices(),objective);
   if(!bins){
@@ -950,7 +953,7 @@ function reportBlocks(d,shots){
   const {pr,res,pc,segs,bins,cp,fq}=d, all=d.scope==='all', B=[];
   const xs=extras.filter(x=>x.len>0&&x.qty>0);
   const date=new Date().toLocaleDateString('he-IL');
-  const total=segs.reduce((a,s)=>a+s.len,0), nPl=segs.reduce((a,s)=>a+s.nb,0);
+  const total=segs.reduce((a,s)=>a+s.len,0), covered=+segs.reduce((a,s)=>a+coverOf(s,pr),0).toFixed(1), nPl=segs.reduce((a,s)=>a+s.nb,0);
   // ---- title + summary
   B.push(`<div><h1>תוכנית בנייה · גדר האורן</h1><p class="rp-sub">${all?'לוחות + קונסטרוקציה':'לוחות בלבד'} · הופק ב-${date}</p></div>`);
   B.push(`<h2 class="rp-keep">סיכום ומידות</h2>`);
@@ -960,9 +963,9 @@ function reportBlocks(d,shots){
   if(all)kv.push(['אורך קורה 5×5',mLabel(cp.stock)+' ('+cp.stock+' ס״מ)'],['פחת קונסטרוקציה',cp.wastePct.toFixed(1)+'% · '+((cp.bought-cp.net)/100).toFixed(2)+' מ׳'],['5×5 נטו',f1(cp.net/100)+' מ׳']);
   B.push(`<div class="rp-kv">${kv.map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>`);
   B.push(`<h2 class="rp-keep">מידות לפי קטע</h2>`);
-  B.push(`<table><thead><tr><th>קטע</th><th>קוד</th><th class="n">רוחב</th><th class="n">בסיס</th><th class="n">אורך לוח</th><th class="n">לוחות</th><th class="n">לוח אחרון (רוחב)</th>${all?'<th class="n">עמודים</th><th class="n">קורות</th>':''}</tr></thead><tbody>${
-    segs.map(s=>`<tr><td>${s.name}</td><td>${CODE[s.id]}</td><td class="n">${s.len}</td><td class="n">${s.base}</td><td class="n">${s.blen}</td><td class="n">${s.nb}</td><td class="n">${f1(s.last)}${s.last<pr.W?' ✂':''}</td>${all?`<td class="n">${s.posts.length}</td><td class="n">${s.rails.length}</td>`:''}</tr>`).join('')
-    }<tr class="tot"><td>סה״כ</td><td></td><td class="n">${total}</td><td></td><td></td><td class="n">${nPl}</td><td></td>${all?`<td class="n">${fq.posts}</td><td></td>`:''}</tr></tbody></table>`);
+  B.push(`<table><thead><tr><th>קטע</th><th>קוד</th><th class="n">כיסוי</th><th class="n">בסיס</th><th class="n">אורך לוח</th><th class="n">לוחות</th><th class="n">לוח אחרון (רוחב)</th>${all?'<th class="n">עמודים</th><th class="n">קורות</th>':''}</tr></thead><tbody>${
+    segs.map(s=>`<tr><td>${s.name}</td><td>${CODE[s.id]}</td><td class="n">${f1(coverOf(s,pr))}</td><td class="n">${s.base}</td><td class="n">${s.blen}</td><td class="n">${s.nb}</td><td class="n">${f1(s.last)}${s.last<pr.W?' ✂':''}</td>${all?`<td class="n">${s.posts.length}</td><td class="n">${s.rails.length}</td>`:''}</tr>`).join('')
+    }<tr class="tot"><td>סה״כ</td><td></td><td class="n">${f1(covered)}</td><td></td><td></td><td class="n">${nPl}</td><td></td>${all?`<td class="n">${fq.posts}</td><td></td>`:''}</tr></tbody></table>`);
   // ---- shopping list
   const buy=[[`לוחות אורן ${mLabel(pr.stock)} (${pr.stock} ס״מ), רוחב ${f1(pr.W)}, עובי ${f1(pr.T)} — בלי חיתוך אצל הספק`,bins.length+' יח׳',`${res.pieces} חתיכות אחרי חיתוך במקום`]];
   if(all)buy.push([`קורות אורן 5×5 ${mLabel(cp.stock)} (${cp.stock} ס״מ) — בלי חיתוך אצל הספק`,cp.n+' יח׳',`${cp.pieces.length} חתיכות · ${f1(cp.net/100)} מ׳ נטו`]);
